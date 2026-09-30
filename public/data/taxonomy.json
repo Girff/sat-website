@@ -1,0 +1,81 @@
+{
+ "math": {
+  "count": 1925,
+  "domains": {
+   "Advanced Math": {
+    "count": 540,
+    "skills": {
+     "Equivalent expressions": 116,
+     "Nonlinear equations in one variable and systems of equations in two variables": 165,
+     "Nonlinear functions": 259
+    }
+   },
+   "Algebra": {
+    "count": 616,
+    "skills": {
+     "Linear equations in one variable": 112,
+     "Linear equations in two variables": 130,
+     "Linear functions": 170,
+     "Linear inequalities in one or two variables": 78,
+     "Systems of two linear equations in two variables": 126
+    }
+   },
+   "Geometry and Trigonometry": {
+    "count": 348,
+    "skills": {
+     "Area and volume": 110,
+     "Circles": 67,
+     "Lines, angles, and triangles": 102,
+     "Right triangles and trigonometry": 69
+    }
+   },
+   "Problem-Solving and Data Analysis": {
+    "count": 421,
+    "skills": {
+     "Evaluating statistical claims: Observational studies and experiments": 12,
+     "Inference from sample statistics and margin of error": 28,
+     "One-variable data: Distributions and measures of center and spread": 84,
+     "Percentages": 84,
+     "Probability and conditional probability": 49,
+     "Ratios, rates, proportional relationships, and units": 93,
+     "Two-variable data: Models and scatterplots": 71
+    }
+   }
+  }
+ },
+ "reading": {
+  "count": 1845,
+  "domains": {
+   "Craft and Structure": {
+    "count": 471,
+    "skills": {
+     "Cross-Text Connections": 61,
+     "Text Structure and Purpose": 149,
+     "Words in Context": 261
+    }
+   },
+   "Expression of Ideas": {
+    "count": 398,
+    "skills": {
+     "Rhetorical Synthesis": 204,
+     "Transitions": 194
+    }
+   },
+   "Information and Ideas": {
+    "count": 555,
+    "skills": {
+     "Central Ideas and Details": 138,
+     "Command of Evidence": 277,
+     "Inferences": 140
+    }
+   },
+   "Standard English Conventions": {
+    "count": 421,
+    "skills": {
+     "Boundaries": 213,
+     "Form, Structure, and Sense": 208
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+# The source PDFs (166 MB and 108 MB) exceed GitHub's 100 MB file limit; keep them locally.
+source-pdfs/*.pdf
+# Local tool state
+.claude/
+.claude-flow/

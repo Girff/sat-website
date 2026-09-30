@@ -1,0 +1,168 @@
+@import "tailwindcss";
+
+/* Dark mode follows a class on <html> so the in-app toggle can override the OS. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Calm study palette: cool neutrals, one blue accent (close to the test app's),
+   and difficulty/result colours that are always paired with text. */
+:root {
+  --c-bg: #f6f7f9;
+  --c-surface: #ffffff;
+  --c-surface-2: #f0f2f5;
+  --c-ink: #19202c;
+  --c-muted: #5b6474;
+  --c-line: #dfe3e9;
+  --c-line-strong: #c3cad5;
+  --c-accent: #2b59c3;
+  --c-accent-hover: #2249a6;
+  --c-accent-ink: #ffffff;
+  --c-accent-soft: #e8eefb;
+  --c-easy: #1f7a4d;
+  --c-easy-soft: #e3f3ea;
+  --c-medium: #955a06;
+  --c-medium-soft: #fbf0dc;
+  --c-hard: #b3261e;
+  --c-hard-soft: #fbe7e5;
+  --c-flag: #b45309;
+  --text-scale: 1;
+  /* raster math/figures were cut at 12px text; scale them with the text */
+  --img-scale: calc(1.3333 * var(--text-scale));
+  color-scheme: light;
+}
+.dark {
+  --c-bg: #0f131a;
+  --c-surface: #161b24;
+  --c-surface-2: #1d2330;
+  --c-ink: #e6e9ef;
+  --c-muted: #9aa3b3;
+  --c-line: #29313f;
+  --c-line-strong: #3a4455;
+  --c-accent: #86a6ff;
+  --c-accent-hover: #a3bcff;
+  --c-accent-ink: #0f131a;
+  --c-accent-soft: #1d2a47;
+  --c-easy: #5cc792;
+  --c-easy-soft: #15301f;
+  --c-medium: #f0ab52;
+  --c-medium-soft: #372812;
+  --c-hard: #ff8c82;
+  --c-hard-soft: #3a1b18;
+  --c-flag: #f5b454;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--c-bg);
+  --color-surface: var(--c-surface);
+  --color-surface-2: var(--c-surface-2);
+  --color-ink: var(--c-ink);
+  --color-muted: var(--c-muted);
+  --color-line: var(--c-line);
+  --color-line-strong: var(--c-line-strong);
+  --color-accent: var(--c-accent);
+  --color-accent-hover: var(--c-accent-hover);
+  --color-accent-ink: var(--c-accent-ink);
+  --color-accent-soft: var(--c-accent-soft);
+  --color-easy: var(--c-easy);
+  --color-easy-soft: var(--c-easy-soft);
+  --color-medium: var(--c-medium);
+  --color-medium-soft: var(--c-medium-soft);
+  --color-hard: var(--c-hard);
+  --color-hard-soft: var(--c-hard-soft);
+  --color-flag: var(--c-flag);
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Source Serif 4 Variable", "Source Serif Pro", Georgia, "Times New Roman", serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+html {
+  font-size: calc(100% * var(--text-scale));
+  background: var(--c-bg);
+  color: var(--c-ink);
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: var(--c-bg);
+  color: var(--c-ink);
+  line-height: 1.5;
+}
+:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
+
+/* ---------------------------------------------------------------- question content */
+.q-content { line-height: 1.6; overflow-wrap: anywhere; }
+.q-content p { margin: 0.45em 0; }
+.q-content p.center { text-align: center; }
+.q-content p.bullet { display: list-item; list-style: disc; margin-left: 1.4em; }
+.q-passage { font-family: var(--font-serif); font-size: 1.06rem; line-height: 1.65; }
+.q-math-block { margin: 0.5em 0; text-align: center; overflow-x: auto; overflow-y: hidden; }
+.q-choice .q-math-block, .q-choice .q-figure { text-align: left; }
+.q-figure { margin: 0.75em 0; text-align: center; }
+.q-figure.inline-eq { text-align: left; }
+.q-img {
+  display: inline-block;
+  max-width: 100%;
+  height: auto;
+  width: calc(var(--w) * var(--img-scale));
+}
+.q-img-inline { vertical-align: middle; display: inline; }
+.dark .q-img { filter: invert(1) hue-rotate(180deg); }
+.q-table-wrap { overflow-x: auto; margin: 0.75em 0; }
+.q-table { border-collapse: collapse; margin: 0 auto; }
+.q-table th, .q-table td { border: 1px solid var(--c-line-strong); padding: 0.3em 0.8em; text-align: center; }
+.q-table th { background: var(--c-surface-2); font-weight: 600; }
+.q-content .katex { font-size: 1.08em; }
+
+/* Screen-reader-only text and KaTeX's MathML are absolutely positioned: keep them inside
+   their scroll container so they can't widen the page. */
+@layer base {
+  :where(.overflow-auto, .overflow-x-auto) { position: relative; }
+}
+.q-math-block, .q-table-wrap { position: relative; }
+
+/* the search box has its own clear button */
+input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+
+/* ---------------------------------------------------------------- dialogs & questions */
+.q-dialog { max-height: calc(100dvh - 1.5rem); }
+.q-dialog:focus { outline: none; }
+.q-dialog::backdrop { background: rgb(15 19 26 / 0.55); }
+.q-stem { font-size: 1.02rem; }
+.q-eliminated::after {
+  content: "";
+  position: absolute;
+  left: 0.5rem;
+  right: 0.5rem;
+  top: 50%;
+  border-top: 2px solid var(--c-ink);
+  pointer-events: none;
+}
+
+/* passage highlighter (CSS Custom Highlight API) */
+::highlight(q-hl) { background-color: #fde68a; color: #19202c; }
+.dark ::highlight(q-hl) { background-color: #8a6a12; color: #fff; }
+.q-highlighting .q-passage { cursor: text; }
+
+/* ---------------------------------------------------------------- print */
+@page { margin: 16mm 14mm; }
+@media print {
+  :root, .dark {
+    --c-bg: #fff; --c-surface: #fff; --c-surface-2: #f3f4f6; --c-ink: #000; --c-muted: #444;
+    --c-line: #ccc; --c-line-strong: #999; --c-accent: #1d4ed8; --c-accent-soft: #eef2ff;
+    --c-easy: #166534; --c-easy-soft: #fff; --c-medium: #92400e; --c-medium-soft: #fff; --c-hard: #991b1b; --c-hard-soft: #fff;
+    --text-scale: 1;
+    color-scheme: light;
+  }
+  html { font-size: 11pt; }
+  body { background: #fff; }
+  .dark .q-img { filter: none; }
+  .q-passage { font-size: 1rem; }
+  a { color: inherit; text-decoration: none; }
+}
