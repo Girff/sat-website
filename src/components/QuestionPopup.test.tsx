@@ -32,6 +32,7 @@ const radios = () => [...document.querySelectorAll('[role="radio"]')];
 beforeEach(async () => {
   HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) { this.setAttribute('open', ''); };
   HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) { this.removeAttribute('open'); };
+  Element.prototype.scrollIntoView ??= () => undefined;   // not implemented by jsdom
   vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify([question('q1'), question('q2')]))));
   const entries = [entry('q1'), entry('q2')];
   useData.setState({ entries, byId: new Map(entries.map((e) => [e.id, e])), status: 'ready' });
