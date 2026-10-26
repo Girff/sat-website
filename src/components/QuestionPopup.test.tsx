@@ -88,4 +88,14 @@ describe('question popup', () => {
     await act(async () => { button('Check Answer').click(); });
     expect(reveal()?.textContent).toContain('No answer given');
   });
+
+  it('shows a Desmos regression tip on tagged questions, and Enter on it does not check the answer', async () => {
+    expect(document.querySelector('summary')).toBeNull();
+    const tagged: IndexEntry = { ...entry('q1'), desmos: 'table' };
+    await act(async () => { useData.setState({ byId: new Map([['q1', tagged], ['q2', entry('q2')]]) }); });
+    const summary = document.querySelector('summary')!;
+    expect(summary.textContent).toBe('Desmos regression tip: Table of values');
+    await act(async () => { summary.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); });
+    expect(reveal()).toBeNull();
+  });
 });

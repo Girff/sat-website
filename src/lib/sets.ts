@@ -1,4 +1,5 @@
 // Problem sets: options, default names, SAT pacing, ordering and the random generator.
+import { DESMOS_LABEL } from './desmos';
 import type { Tab } from './filters';
 import { LETTERS, shuffled, type ChoiceOrder } from './letters';
 import { DIFFICULTIES, SECTION_LABEL, type Difficulty, type IndexEntry, type Section } from './types';
@@ -34,13 +35,13 @@ export interface SetItem {
 
 const one = <T,>(xs: T[]): T | undefined => (xs.length && xs.every((x) => x === xs[0]) ? xs[0] : undefined);
 
-/** e.g. "Math – Hard – 20 Qs", "Reading & Writing – Mixed – 12 Qs". */
+/** e.g. "Math – Hard – 20 Qs", "Reading & Writing – Mixed – 12 Qs", "Desmos regression – Mixed – 10 Qs". */
 export function autoName(entries: IndexEntry[]): string {
   if (!entries.length) return 'Problem set';
   const section = one(entries.map((e) => e.section));
   const skill = one(entries.map((e) => e.skill));
   const diff = one(entries.map((e) => e.difficulty));
-  const first = skill ?? (section ? SECTION_LABEL[section] : 'R&W + Math');
+  const first = skill ?? (entries.every((e) => e.desmos) ? DESMOS_LABEL : section ? SECTION_LABEL[section] : 'R&W + Math');
   return `${first} – ${diff ?? 'Mixed'} – ${entries.length} Q${entries.length === 1 ? '' : 's'}`;
 }
 
@@ -84,6 +85,8 @@ export interface GenOptions {
   /** Percentages per difficulty (summing to 100), or null for no preference. */
   mix: Mix | null;
   excludeAnswered: boolean;
+  /** Only questions that are good Desmos regression practice. */
+  desmosOnly: boolean;
 }
 
 export function generatorPool(entries: IndexEntry[], o: Omit<GenOptions, 'count' | 'mix'>, answered: Set<string>): IndexEntry[] {
@@ -91,7 +94,8 @@ export function generatorPool(entries: IndexEntry[], o: Omit<GenOptions, 'count'
     (o.section === 'both' || e.section === o.section)
     && (!o.domains.length || o.domains.includes(e.domain))
     && (!o.skills.length || o.skills.includes(e.skill))
-    && !(o.excludeAnswered && answered.has(e.id)));
+    && !(o.excludeAnswered && answered.has(e.id))
+    && !(o.desmosOnly && !e.desmos));
 }
 
 /** Split `count` by percentages, rounding so the parts add up exactly (largest remainder). */

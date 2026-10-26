@@ -4,6 +4,8 @@ export type Section = 'reading' | 'math';
 export type Difficulty = 'Easy' | 'Medium' | 'Hard';
 export type QType = 'mcq' | 'spr';
 export type Letter = 'A' | 'B' | 'C' | 'D';
+/** Kinds of question that Desmos regression (~) solves well; see src/lib/desmos.ts. */
+export type DesmosPattern = 'table' | 'points' | 'identity' | 'infinite' | 'fit';
 
 /** Text values use a small inline markup: $latex$, <b>, <i>, <u>, <sup>, <sub>,
  *  <br/>, <img src w h alt/>, and &lt; &gt; &amp; entities. Literal dollars are \$. */
@@ -46,6 +48,8 @@ export interface IndexEntry {
   preview: string;
   chunk: string;
   low: boolean;
+  /** Set on the math questions that are good Desmos regression practice. */
+  desmos?: DesmosPattern;
 }
 
 export type Taxonomy = Record<Section, {

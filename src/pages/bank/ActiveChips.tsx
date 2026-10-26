@@ -1,4 +1,5 @@
 import { IconX } from '../../components/Icons';
+import { DESMOS_LABEL } from '../../lib/desmos';
 import { STATUS_LABEL, activeFilterCount, type Filters } from '../../lib/filters';
 import { TYPE_LABEL } from '../../lib/types';
 
@@ -16,6 +17,7 @@ export function ActiveChips({ filters, onChange, onClear }: { filters: Filters; 
     ...filters.difficulties.map((d) => ({ key: `f:${d}`, label: d, remove: { difficulties: filters.difficulties.filter((x) => x !== d) } })),
     ...filters.types.map((t) => ({ key: `t:${t}`, label: TYPE_LABEL[t], remove: { types: filters.types.filter((x) => x !== t) } })),
     ...filters.statuses.map((s) => ({ key: `st:${s}`, label: `Status: ${STATUS_LABEL[s]}`, remove: { statuses: filters.statuses.filter((x) => x !== s) } })),
+    ...(filters.desmos ? [{ key: 'desmos', label: DESMOS_LABEL, remove: { desmos: false } }] : []),
     ...(filters.q.trim() ? [{ key: 'q', label: `“${filters.q.trim()}”`, remove: { q: '' } }] : []),
   ];
   return (

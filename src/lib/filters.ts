@@ -22,6 +22,8 @@ export interface Filters {
   difficulties: Difficulty[];
   types: QType[];
   statuses: StatusKey[];
+  /** Only questions that are good Desmos regression practice. */
+  desmos: boolean;
   q: string;
 }
 
@@ -31,7 +33,7 @@ export interface SortItem {
 }
 
 export const EMPTY_FILTERS: Filters = {
-  tab: 'both', domains: [], skills: [], difficulties: [], types: [], statuses: [], q: '',
+  tab: 'both', domains: [], skills: [], difficulties: [], types: [], statuses: [], desmos: false, q: '',
 };
 
 const DIFFS: Difficulty[] = ['Easy', 'Medium', 'Hard'];
@@ -47,6 +49,7 @@ export function filtersFromParams(p: URLSearchParams): Filters {
     difficulties: p.getAll('diff').filter((d): d is Difficulty => DIFFS.includes(d as Difficulty)),
     types: p.getAll('type').filter((t): t is QType => TYPES.includes(t as QType)),
     statuses: p.getAll('status').filter((s): s is StatusKey => STATUS_KEYS.includes(s as StatusKey)),
+    desmos: p.get('desmos') === '1',
     q: p.get('q') ?? '',
   };
 }
@@ -65,6 +68,7 @@ export function toParams(f: Filters, sort: SortItem[]): URLSearchParams {
   f.difficulties.forEach((d) => p.append('diff', d));
   f.types.forEach((t) => p.append('type', t));
   f.statuses.forEach((s) => p.append('status', s));
+  if (f.desmos) p.set('desmos', '1');
   if (f.q.trim()) p.set('q', f.q);
   if (sort.length) p.set('sort', sort.map((s) => (s.desc ? '-' : '') + s.id).join(','));
   return p;
@@ -96,6 +100,7 @@ function passes(e: IndexEntry, f: Filters, statusOf: StatusOf, hay: HayFn, terms
     const keys = statusKeys(statusOf(e.id));
     if (!f.statuses.some((s) => keys.includes(s))) return false;
   }
+  if (!skip.includes('desmos') && f.desmos && !e.desmos) return false;
   if (terms.length) {
     const text = hay(e);
     if (!terms.every((t) => text.includes(t))) return false;
@@ -130,6 +135,8 @@ export interface Facets {
   difficulties: Map<Difficulty, number>;
   types: Map<QType, number>;
   statuses: Map<StatusKey, number>;
+  /** Questions that would match with the Desmos regression filter on. */
+  desmos: number;
 }
 
 const bump = <K>(m: Map<K, number>, k: K) => m.set(k, (m.get(k) ?? 0) + 1);
@@ -141,7 +148,7 @@ export function facetCounts(entries: IndexEntry[], f: Filters, statusOf: StatusO
   const terms = searchTerms(f.q);
   const out: Facets = {
     tabs: { reading: 0, math: 0, both: 0 },
-    domains: new Map(), skills: new Map(), difficulties: new Map(), types: new Map(), statuses: new Map(),
+    domains: new Map(), skills: new Map(), difficulties: new Map(), types: new Map(), statuses: new Map(), desmos: 0,
   };
   for (const e of entries) {
     if (passes(e, f, statusOf, hay, terms, ['tab'])) {
@@ -153,6 +160,7 @@ export function facetCounts(entries: IndexEntry[], f: Filters, statusOf: StatusO
     if (passes(e, f, statusOf, hay, terms, ['difficulties'])) bump(out.difficulties, e.difficulty);
     if (passes(e, f, statusOf, hay, terms, ['types'])) bump(out.types, e.type);
     if (passes(e, f, statusOf, hay, terms, ['statuses'])) statusKeys(statusOf(e.id)).forEach((k) => bump(out.statuses, k));
+    if (e.desmos && passes(e, f, statusOf, hay, terms, ['desmos'])) out.desmos++;
   }
   return out;
 }
@@ -185,5 +193,6 @@ export function normalizeFilters(entries: IndexEntry[], f: Filters): Filters {
 }
 
 export function activeFilterCount(f: Filters): number {
-  return f.domains.length + f.skills.length + f.difficulties.length + f.types.length + f.statuses.length + (f.q.trim() ? 1 : 0);
+  return f.domains.length + f.skills.length + f.difficulties.length + f.types.length + f.statuses.length
+    + (f.desmos ? 1 : 0) + (f.q.trim() ? 1 : 0);
 }

@@ -1,5 +1,5 @@
-// "Generate Random Set": section, size, domains/skills, difficulty mix, and
-// whether to skip questions already answered this session.
+// "Generate Random Set": section, size, domains/skills, Desmos regression practice,
+// difficulty mix, and whether to skip questions already answered this session.
 import { useMemo } from 'react';
 import { MultiSelect, type Option } from '../../components/MultiSelect';
 import { Segmented } from '../../components/Segmented';
@@ -45,11 +45,15 @@ export function Generator({ entries, answered, options: o, onChange }: Props) {
   const plan = o.mix && total === 100 ? allocate(n, o.mix) : null;
   const short = plan ? DIFFICULTIES.filter((d) => plan[d] > (byDiff.get(d) ?? 0)) : [];
 
-  const setSection = (section: Tab) => {
+  const sectionPatch = (section: Tab): Partial<GenOptions> => {
     const keep = (d: string) => section === 'both' || sectionOf.get(d) === section;
-    const doms = o.domains.filter(keep);
-    onChange({ section, domains: doms, skills: o.skills.filter((s) => keep(domainOfSkill.get(s) ?? '')) });
+    return { section, domains: o.domains.filter(keep), skills: o.skills.filter((s) => keep(domainOfSkill.get(s) ?? '')) };
   };
+  const setSection = (section: Tab) => onChange(sectionPatch(section));
+  const desmosTotal = useMemo(() => entries.filter((e) => e.desmos).length, [entries]);
+  // regression questions are all Math, so turning this on leaves Reading & Writing
+  const setDesmosOnly = (on: boolean) =>
+    onChange(on && o.section === 'reading' ? { ...sectionPatch('math'), desmosOnly: true } : { desmosOnly: on });
 
   return (
     <div className="grid gap-5">
@@ -83,6 +87,22 @@ export function Generator({ entries, answered, options: o, onChange }: Props) {
           </div>
         </div>
       </div>
+
+      <label className="flex items-start gap-2 text-sm">
+        <input
+          type="checkbox"
+          className="mt-0.5 size-4 accent-[var(--c-accent)]"
+          checked={o.desmosOnly}
+          onChange={(e) => setDesmosOnly(e.target.checked)}
+        />
+        <span>
+          Only Desmos regression questions
+          <span className="block text-xs text-muted">
+            {desmosTotal.toLocaleString()} Math questions that are good practice for Desmos’s ~ regression: tables of values,
+            points and function values, equivalent expressions, infinitely many solutions, and lines of best fit
+          </span>
+        </span>
+      </label>
 
       <div>
         <Segmented

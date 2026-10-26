@@ -42,7 +42,7 @@ export const useUi = create<UiState>((set) => ({
   builder: {
     mode: null,
     include: null,
-    gen: { section: null, count: 10, domains: [], skills: [], mix: MIX_PRESETS[1].mix, excludeAnswered: true },
+    gen: { section: null, count: 10, domains: [], skills: [], mix: MIX_PRESETS[1].mix, excludeAnswered: true, desmosOnly: false },
     generated: [],
     config: DEFAULT_CONFIG,
   },

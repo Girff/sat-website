@@ -22,6 +22,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from lib.primitives import FaceResolver  # noqa: E402
 from lib.question import QuestionExtractor  # noqa: E402
 from lib.plaintext import plain  # noqa: E402
+from lib.desmos import regression_pattern  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PDF_DIR = os.path.join(ROOT, "source-pdfs")
@@ -118,9 +119,13 @@ def write_outputs(questions, out):
             with open(os.path.join(qdir, name + ".json"), "w") as f:
                 json.dump(chunk, f, ensure_ascii=False, separators=(",", ":"))
             for q in chunk:
-                index.append(dict(id=q["id"], section=q["section"], domain=q["domain"], skill=q["skill"],
-                                  difficulty=q["difficulty"], type=q["type"], preview=preview_of(q),
-                                  chunk=name, low=q["parseConfidence"] == "low"))
+                row = dict(id=q["id"], section=q["section"], domain=q["domain"], skill=q["skill"],
+                           difficulty=q["difficulty"], type=q["type"], preview=preview_of(q),
+                           chunk=name, low=q["parseConfidence"] == "low")
+                pattern = regression_pattern(q)
+                if pattern:
+                    row["desmos"] = pattern
+                index.append(row)
                 search[q["id"]] = search_text(q)
     with open(os.path.join(out, "index.json"), "w") as f:
         json.dump(index, f, ensure_ascii=False, separators=(",", ":"))
