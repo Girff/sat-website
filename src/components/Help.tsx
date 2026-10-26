@@ -6,6 +6,7 @@ const TOPICS: [string, string][] = [
   ['Find questions', 'Pick Reading & Writing, Math or Both, then filter, search, and sort by clicking column headers (Shift-click adds a second sort). The address bar keeps your filters, so you can bookmark a view.'],
   ['Preview', 'Click a row to open a question. Answers stay hidden until you press Check Answer, and hide again when you move on. Keys: A–D choose, Enter checks, ← → move, Esc closes.'],
   ['Build a set', 'Tick questions (Shift-click for a range) and press Build Problem Set, or generate a random set on Build Test. Choose the timer, Check Answer, and shuffling there.'],
+  ['Desmos regression', 'Tick Desmos regression in the question bank, or Only Desmos regression questions on Build Test, for Math questions that are fastest with Desmos’s ~ regression: tables of values, points, equivalent expressions, infinitely many solutions and lines of best fit. Each one has a setup tip under the question.'],
   ['Take a test', 'Use the navigator at the bottom to jump around, Mark for Review, and ABC to cross out choices. Reading has a highlighter; Math has the Desmos calculator and the reference sheet.'],
   ['Review', 'After submitting, click any answer choice to see why it is right or wrong. Retry missed questions or practice more of the same skills.'],
   ['Saving', 'Nothing is stored on this computer. Export your results from History or the Dashboard, and import the file next time.'],

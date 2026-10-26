@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { IconSearch, IconX } from '../../components/Icons';
 import { MultiSelect, type Option } from '../../components/MultiSelect';
+import { DESMOS_LABEL } from '../../lib/desmos';
 import {
   STATUS_KEYS, STATUS_LABEL, domainOptions, skillOptions,
   type Facets, type Filters, type StatusKey,
@@ -87,6 +88,24 @@ export function FilterBar({ entries, filters, facets, onChange, onSearchStart, s
       <MultiSelect label="Difficulty" options={diffs} selected={filters.difficulties} onChange={(difficulties) => onChange({ difficulties })} />
       <MultiSelect label="Type" options={types} selected={filters.types} onChange={(types) => onChange({ types })} />
       <MultiSelect label="Status" options={statuses} selected={filters.statuses} onChange={(statuses) => onChange({ statuses })} />
+      {/* math only, so hidden on the Reading & Writing tab unless it is already on */}
+      {(filters.tab !== 'reading' || filters.desmos) && (
+        <label
+          title="Math questions that are good practice for Desmos regression (~): tables, points, equivalent expressions, infinitely many solutions and best fit"
+          className={`flex h-9 cursor-pointer items-center gap-2 rounded-md border px-3 text-sm font-medium has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent ${
+            filters.desmos ? 'border-accent bg-accent-soft text-accent' : 'border-line bg-surface text-ink hover:border-line-strong'
+          }`}
+        >
+          <input
+            type="checkbox"
+            className="size-4 accent-[var(--c-accent)]"
+            checked={filters.desmos}
+            onChange={(e) => onChange({ desmos: e.target.checked })}
+          />
+          {DESMOS_LABEL}
+          <span className="tabular-nums text-xs text-muted">{facets.desmos.toLocaleString()}</span>
+        </label>
+      )}
     </div>
   );
 }

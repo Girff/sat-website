@@ -5,8 +5,8 @@ import { DEFAULT_CONFIG, allocate, autoName, buildItems, generateSet, generatorP
 import { mergeImport, parseImport } from './transfer';
 import type { IndexEntry, Letter } from './types';
 
-const E = (id: string, section: 'reading' | 'math', difficulty: 'Easy' | 'Medium' | 'Hard', skill = 'S1'): IndexEntry => ({
-  id, section, difficulty, skill, domain: section === 'math' ? 'Algebra' : 'Craft', type: 'mcq', preview: '', chunk: 'c', low: false,
+const E = (id: string, section: 'reading' | 'math', difficulty: 'Easy' | 'Medium' | 'Hard', skill = 'S1', desmos?: IndexEntry['desmos']): IndexEntry => ({
+  id, section, difficulty, skill, domain: section === 'math' ? 'Algebra' : 'Craft', type: 'mcq', preview: '', chunk: 'c', low: false, desmos,
 });
 function rng(seed = 1) {
   return () => {
@@ -37,12 +37,14 @@ describe('choice shuffling', () => {
 });
 
 describe('problem sets', () => {
-  const entries = [E('r1', 'reading', 'Easy'), E('m1', 'math', 'Hard'), E('r2', 'reading', 'Hard'), E('m2', 'math', 'Hard', 'S2')];
+  const entries = [E('r1', 'reading', 'Easy'), E('m1', 'math', 'Hard'), E('r2', 'reading', 'Hard'), E('m2', 'math', 'Hard', 'S2', 'table')];
 
   it('names sets and paces countdowns', () => {
     expect(autoName([entries[1], entries[3]])).toBe('Math – Hard – 2 Qs');
     expect(autoName(entries)).toBe('R&W + Math – Mixed – 4 Qs');
     expect(autoName([entries[0], entries[2]])).toBe('S1 – Mixed – 2 Qs');
+    expect(autoName([entries[3], E('m3', 'math', 'Easy', 'S3', 'identity')])).toBe('Desmos regression – Mixed – 2 Qs');
+    expect(autoName([entries[3], E('m3', 'math', 'Easy', 'S2', 'identity')])).toBe('S2 – Mixed – 2 Qs');
     expect(timeLimit({ ...DEFAULT_CONFIG, timer: 'countdown' }, entries)).toBe(71 * 2 + 95 * 2);
     expect(timeLimit({ ...DEFAULT_CONFIG, timer: 'custom', customMinutes: 12 }, entries)).toBe(720);
     expect(timeLimit({ ...DEFAULT_CONFIG, timer: 'stopwatch' }, entries)).toBeNull();
@@ -61,8 +63,10 @@ describe('problem sets', () => {
   });
 
   it('generates from the pool, filling short difficulties from others', () => {
-    const pool = generatorPool(entries, { section: 'math', domains: [], skills: [], excludeAnswered: true }, new Set(['m2']));
+    const pool = generatorPool(entries, { section: 'math', domains: [], skills: [], excludeAnswered: true, desmosOnly: false }, new Set(['m2']));
     expect(pool.map((e) => e.id)).toEqual(['m1']);
+    const desmos = generatorPool(entries, { section: 'both', domains: [], skills: [], excludeAnswered: false, desmosOnly: true }, new Set());
+    expect(desmos.map((e) => e.id)).toEqual(['m2']);
     const set = generateSet(entries, 3, { Easy: 100, Medium: 0, Hard: 0 }, rng());
     expect(set).toHaveLength(3);
     expect(set.some((e) => e.id === 'r1')).toBe(true);

@@ -5,8 +5,9 @@
 //    keyed component, so nothing carries over). There is no "always show" setting.
 import { useEffect, useState } from 'react';
 import { loadQuestion, prefetchChunks } from '../lib/data';
+import { DESMOS_LABEL, DESMOS_PATTERNS } from '../lib/desmos';
 import { grade } from '../lib/scoring';
-import type { IndexEntry, Letter, Question } from '../lib/types';
+import type { DesmosPattern, IndexEntry, Letter, Question } from '../lib/types';
 import { useData } from '../store/data';
 import { useSession } from '../store/session';
 import { useUi } from '../store/ui';
@@ -136,7 +137,7 @@ function PopupBody({ entry, index, total, order, onPrev, onNext }: BodyProps) {
         const l = e.key.toUpperCase() as Letter;
         if (q.choices?.some((c) => c.label === l)) { e.preventDefault(); setPicked(l); }
       } else if (e.key === 'Enter' && !typing) {
-        if (e.target instanceof Element && e.target.closest('button, a, [role="button"]')) return;   // buttons do their own thing
+        if (e.target instanceof Element && e.target.closest('button, a, summary, [role="button"]')) return;   // buttons do their own thing
         e.preventDefault();
         check();
       }
@@ -203,8 +204,20 @@ function PopupBody({ entry, index, total, order, onPrev, onNext }: BodyProps) {
             <AnswerReveal q={q} outcome={outcome} answer={answer} />
           </div>
         )}
+        {entry.desmos && <DesmosTip pattern={entry.desmos} />}
       </QuestionLayout>
       {footer}
     </div>
+  );
+}
+
+/** How to set the question up as a Desmos regression; closed until asked for. */
+function DesmosTip({ pattern }: { pattern: DesmosPattern }) {
+  const p = DESMOS_PATTERNS[pattern];
+  return (
+    <details className="mt-5 rounded-lg border border-line bg-surface-2 px-4 py-2.5 text-sm">
+      <summary className="cursor-pointer font-medium">{DESMOS_LABEL} tip: {p.label}</summary>
+      <p className="mt-2 text-muted">{p.how}</p>
+    </details>
   );
 }
