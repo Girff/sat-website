@@ -65,11 +65,11 @@ export function ChoiceList({
         const isRight = q.correct.includes(c.orig);
         const isOut = eliminated.includes(c.orig);
         const isExplain = explaining === c.orig;
-        let tone = 'border-line-strong hover:border-accent';
-        if (reveal && isRight) tone = 'border-easy bg-easy-soft';
-        else if (reveal && isSel) tone = 'border-hard bg-hard-soft';
-        else if (radio && isSel) tone = 'border-accent bg-accent-soft';
-        if (isExplain) tone += ' ring-2 ring-accent ring-offset-2 ring-offset-surface';
+        let tone = disabled ? 'border-line-strong' : 'border-line-strong hover:border-ink';
+        if (reveal && isRight) tone = 'border-good bg-good-soft';
+        else if (reveal && isSel) tone = 'border-bad bg-bad-soft';
+        else if (radio && isSel) tone = 'border-ink bg-marker-soft';
+        if (isExplain) tone += ' ring-2 ring-ink ring-offset-2 ring-offset-surface';
         const marks = [];
         if (reveal && isRight) marks.push(<Mark key="c" ok>Correct answer</Mark>);
         if (reveal && isSel) marks.push(<Mark key="y" ok={isRight}>Your answer</Mark>);
@@ -84,13 +84,13 @@ export function ChoiceList({
               tabIndex={radio ? (i === focusIndex ? 0 : -1) : 0}
               onClick={() => { if (!disabled) onSelect?.(c.orig); }}
               onKeyDown={(e) => onKey(e, i)}
-              className={`q-choice relative flex min-w-0 flex-1 items-start gap-3 rounded-lg border-2 px-3 py-2.5 transition-colors ${tone} ${
+              className={`q-choice relative flex min-w-0 flex-1 items-start gap-3 rounded-md border-2 px-3 py-2.5 transition-colors ${tone} ${
                 disabled ? 'cursor-default' : 'cursor-pointer'} ${isOut ? 'q-eliminated' : ''}`}
             >
               <span
                 aria-hidden
-                className={`mt-0.5 grid size-7 shrink-0 place-items-center rounded-full border-2 text-sm font-bold ${
-                  (radio && isSel && !reveal) ? 'border-accent bg-accent text-accent-ink' : 'border-current'}`}
+                className={`mt-0.5 grid h-7 w-8 shrink-0 place-items-center rounded-[50%] border-2 text-sm font-extrabold transition-colors ${
+                  (radio && isSel && !reveal) ? 'border-ink bg-ink text-bg' : 'border-control'}`}
               >
                 {c.shown}
               </span>
@@ -106,7 +106,7 @@ export function ChoiceList({
                 onClick={() => onEliminate?.(c.orig)}
                 aria-pressed={isOut}
                 aria-label={isOut ? `Undo cross-out of choice ${c.shown}` : `Cross out choice ${c.shown}`}
-                className="grid w-11 shrink-0 place-items-center rounded-lg text-sm font-bold text-muted hover:bg-surface-2 hover:text-ink"
+                className="grid w-11 shrink-0 place-items-center rounded-md text-sm font-bold text-muted hover:bg-surface-2 hover:text-ink"
               >
                 {isOut ? <span className="text-xs font-semibold underline">Undo</span> : <span className="relative">{c.shown}<span aria-hidden className="absolute inset-x-[-4px] top-1/2 border-t-2 border-current" /></span>}
               </button>
@@ -120,7 +120,7 @@ export function ChoiceList({
 
 function Mark({ ok, children }: { ok: boolean; children: string }) {
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${ok ? 'bg-easy text-white dark:text-bg' : 'bg-hard text-white dark:text-bg'}`}>
+    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold ${ok ? 'bg-good text-white dark:text-bg' : 'bg-bad text-white dark:text-bg'}`}>
       {ok ? <IconCheck width={14} height={14} /> : <IconX width={14} height={14} />}
       {children}
     </span>

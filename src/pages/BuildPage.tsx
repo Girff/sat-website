@@ -2,7 +2,7 @@
 import { useMemo } from 'react';
 import { DifficultyBadge } from '../components/Badges';
 import { btn } from '../components/Dialog';
-import { IconX } from '../components/Icons';
+import { IconPrint, IconX } from '../components/Icons';
 import { Segmented } from '../components/Segmented';
 import { useStartTest } from '../components/StartGuard';
 import type { Tab } from '../lib/filters';
@@ -43,7 +43,9 @@ export default function BuildPage() {
   const name = autoName(list);
   const config = builder.config;
   const setConfig = (patch: Partial<SetConfig>) => setBuilder({ config: { ...config, ...patch } });
-  const canGenerate = generatorPool(entries, gen, answered).length > 0 && mixTotal(gen.mix) === 100;
+  const poolSize = generatorPool(entries, gen, answered).length;
+  const canGenerate = poolSize > 0 && mixTotal(gen.mix) === 100;
+  const pickCount = Math.min(gen.count, poolSize);
 
   const generate = () => {
     const set = generateSet(generatorPool(entries, gen, answered), gen.count, gen.mix);
@@ -56,87 +58,106 @@ export default function BuildPage() {
     navigate('/print');
   };
 
+  const reading = list.filter((e) => e.section === 'reading').length;
+  const why = mode === 'selection'
+    ? 'Tick questions in the question bank first.'
+    : 'Generate a set first.';
+
   return (
-    <div className="mx-auto max-w-[1200px] px-4 py-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Build a problem set</h1>
-      <p className="mt-1 text-sm text-muted">Use the questions you selected in the question bank, or generate a random set.</p>
+    <div className="mx-auto max-w-[1240px] px-4 pb-12 pt-8">
+      <h1 className="text-3xl font-extrabold">Build a set</h1>
+      <p className="mt-2 max-w-[62ch] text-muted">Take the questions you ticked in the bank, or let the site pick them at random. Then choose how you want to be timed.</p>
       {activeTest && (
-        <p className="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-accent bg-accent-soft px-4 py-3 text-sm">
-          <span><strong>{activeTest.name}</strong> is in progress.</span>
+        <p className="mt-5 flex flex-wrap items-center gap-3 rounded-md border border-ink bg-marker-soft px-4 py-3">
+          <span><strong>{activeTest.name}</strong> is still in progress.</span>
           <a href={hrefFor('/test')} className={btn.primary}>Resume test</a>
         </p>
       )}
 
-      <div className="mt-5">
-        <Segmented
-          legend={<span className="sr-only">Source</span>}
-          value={mode}
-          onChange={(m) => setBuilder({ mode: m })}
-          options={[
-            { value: 'selection', label: `From your selection (${selected.size.toLocaleString()})` },
-            { value: 'generate', label: 'Generate random set' },
-          ]}
-        />
-      </div>
-
-      <div className="mt-5 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
-        <section aria-label={mode === 'selection' ? 'Selected questions' : 'Random set'} className="min-w-0 rounded-xl border border-line bg-surface p-5">
-          {mode === 'selection' ? (
-            picked.length === 0 ? (
-              <Empty>
-                No questions selected yet. Tick questions in the <a className="text-accent underline" href={hrefFor('/', new URLSearchParams(bankQuery))}>question bank</a>, or generate a random set.
-              </Empty>
+      <div className="mt-7 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_23rem]">
+        <section aria-label="Questions" className="min-w-0">
+          <Segmented
+            legend="Where the questions come from"
+            value={mode}
+            onChange={(m) => setBuilder({ mode: m })}
+            options={[
+              { value: 'selection', label: `Ticked in the bank (${selected.size.toLocaleString()})` },
+              { value: 'generate', label: 'At random' },
+            ]}
+          />
+          <div className="mt-6">
+            {mode === 'selection' ? (
+              picked.length === 0 ? (
+                <Empty>
+                  <p className="text-lg font-bold">No questions ticked yet</p>
+                  <p className="mt-1 text-muted">Tick questions in the question bank and they’ll appear here. Or pick at random instead.</p>
+                  <div className="mt-4 flex flex-wrap justify-center gap-2">
+                    <a className={btn.primary} href={hrefFor('/', new URLSearchParams(bankQuery))}>Go to the questions</a>
+                    <button type="button" className={btn.secondary} onClick={() => setBuilder({ mode: 'generate' })}>Pick at random</button>
+                  </div>
+                </Empty>
+              ) : (
+                <>
+                  {pickedBoth && (
+                    <div className="mb-5">
+                      <Segmented<Tab>
+                        legend="Include"
+                        value={include}
+                        onChange={(v) => setBuilder({ include: v })}
+                        options={(['reading', 'math', 'both'] as Tab[]).map((t) => ({
+                          value: t,
+                          label: `${t === 'both' ? 'Both' : SECTION_LABEL[t]} (${(t === 'both' ? picked : picked.filter((e) => e.section === t)).length})`,
+                        }))}
+                        description="Reading & Writing only, Math only, or a mixed set from what you ticked."
+                      />
+                    </div>
+                  )}
+                  <QuestionList
+                    entries={fromSelection}
+                    onRemove={(id) => setSelected([id], false)}
+                    footer={<a className="link text-sm" href={hrefFor('/', new URLSearchParams(bankQuery))}>Change what’s ticked in the question bank</a>}
+                  />
+                </>
+              )
             ) : (
               <>
-                {pickedBoth && (
-                  <div className="mb-4">
-                    <Segmented<Tab>
-                      legend="Include"
-                      value={include}
-                      onChange={(v) => setBuilder({ include: v })}
-                      options={(['reading', 'math', 'both'] as Tab[]).map((t) => ({
-                        value: t,
-                        label: `${t === 'both' ? 'Both' : SECTION_LABEL[t]} (${(t === 'both' ? picked : picked.filter((e) => e.section === t)).length})`,
-                      }))}
-                      description="Reading-only, Math-only, or a mixed set from your selection."
-                    />
+                <Generator entries={entries} answered={answered} options={gen} onChange={(p) => setBuilder({ gen: { ...builder.gen, ...p }, generated: builder.generated })} />
+                <div className="mt-6 flex flex-wrap gap-2">
+                  <button type="button" className={generated.length ? btn.secondary : btn.primary} disabled={!canGenerate} onClick={generate}>
+                    {generated.length ? 'Pick again' : pickCount ? `Pick ${pickCount} question${pickCount === 1 ? '' : 's'}` : 'Pick questions'}
+                  </button>
+                </div>
+                {generated.length > 0 && (
+                  <div className="mt-6">
+                    <QuestionList entries={generated} onRemove={(id) => setBuilder({ generated: builder.generated.filter((g) => g !== id) })} />
                   </div>
                 )}
-                <QuestionList
-                  entries={fromSelection}
-                  onRemove={(id) => setSelected([id], false)}
-                  footer={<a className="text-sm font-medium text-accent hover:underline" href={hrefFor('/', new URLSearchParams(bankQuery))}>Change the selection in the question bank</a>}
-                />
               </>
-            )
-          ) : (
-            <>
-              <Generator entries={entries} answered={answered} options={gen} onChange={(p) => setBuilder({ gen: { ...builder.gen, ...p }, generated: builder.generated })} />
-              <div className="mt-5 flex flex-wrap gap-2">
-                <button type="button" className={generated.length ? btn.secondary : btn.primary} disabled={!canGenerate} onClick={generate}>
-                  {generated.length ? 'Generate again' : 'Generate set'}
-                </button>
-              </div>
-              {generated.length > 0 && (
-                <div className="mt-5 border-t border-line pt-5">
-                  <QuestionList entries={generated} onRemove={(id) => setBuilder({ generated: builder.generated.filter((g) => g !== id) })} />
-                </div>
-              )}
-            </>
-          )}
+            )}
+          </div>
         </section>
 
-        <aside aria-label="Set options" className="rounded-xl border border-line bg-surface p-5 lg:sticky lg:top-20">
-          <h2 className="mb-4 text-lg font-semibold">Options</h2>
-          <SetOptions config={config} onChange={setConfig} entries={list} autoName={name} showOrder={mode === 'selection'} />
-          <div className="mt-6 grid gap-2">
-            <button type="button" className={btn.primary} disabled={!list.length} onClick={() => start(list)}>
+        <aside aria-label="Your set" className="rounded-lg border border-line-strong bg-surface-2 p-5 lg:sticky lg:top-20">
+          <h2 className="text-xl font-extrabold">Your set</h2>
+          {list.length ? (
+            <p className="mt-1 text-sm text-muted">
+              {list.length} question{list.length === 1 ? '' : 's'}: {[reading && `${reading} Reading & Writing`, list.length - reading && `${list.length - reading} Math`].filter(Boolean).join(', ')}
+            </p>
+          ) : (
+            <p className="mt-1 text-sm text-muted">Empty so far.</p>
+          )}
+          <div className="mt-5 grid gap-2">
+            <button type="button" className={`${btn.hero} w-full`} disabled={!list.length} onClick={() => start(list)} aria-describedby={list.length ? undefined : 'start-why'}>
               Start test{list.length ? ` (${list.length} question${list.length === 1 ? '' : 's'})` : ''}
             </button>
+            {!list.length && <p id="start-why" className="text-center text-sm text-muted">{why}</p>}
             <div className="grid grid-cols-2 gap-2">
-              <button type="button" className={btn.secondary} disabled={!list.length} onClick={() => print(false)}>Print questions</button>
-              <button type="button" className={btn.secondary} disabled={!list.length} onClick={() => print(true)}>Print with key</button>
+              <button type="button" className={btn.secondary} disabled={!list.length} onClick={() => print(false)}><IconPrint width={16} height={16} />Questions</button>
+              <button type="button" className={btn.secondary} disabled={!list.length} onClick={() => print(true)}><IconPrint width={16} height={16} />With answers</button>
             </div>
+          </div>
+          <div className="mt-6 border-t border-line-strong pt-5">
+            <SetOptions config={config} onChange={setConfig} entries={list} autoName={name} showOrder={mode === 'selection'} />
           </div>
         </aside>
       </div>
@@ -147,30 +168,22 @@ export default function BuildPage() {
 }
 
 function Empty({ children }: { children: React.ReactNode }) {
-  return <p className="rounded-lg border border-dashed border-line px-4 py-10 text-center text-sm text-muted">{children}</p>;
+  return <div className="rounded-lg border-2 border-dashed border-line-strong px-4 py-12 text-center">{children}</div>;
 }
 
 function QuestionList({ entries, onRemove, footer }: { entries: IndexEntry[]; onRemove: (id: string) => void; footer?: React.ReactNode }) {
-  const reading = entries.filter((e) => e.section === 'reading').length;
-  const diff = (d: string) => entries.filter((e) => e.difficulty === d).length;
   return (
     <div>
-      <p className="text-sm">
-        <strong>{entries.length.toLocaleString()} question{entries.length === 1 ? '' : 's'}</strong>
-        <span className="text-muted">
-          {' '}· {reading} Reading &amp; Writing · {entries.length - reading} Math · {diff('Easy')} Easy · {diff('Medium')} Medium · {diff('Hard')} Hard
-        </span>
-      </p>
-      <ol className="mt-3 max-h-[28rem] divide-y divide-line overflow-auto rounded-lg border border-line">
+      <ol className="max-h-[32rem] divide-y divide-line overflow-auto rounded-md border border-line-strong">
         {entries.map((e, i) => (
-          <li key={e.id} className="flex items-center gap-3 px-3 py-2 text-sm">
-            <span className="w-6 text-right tabular-nums text-muted">{i + 1}</span>
-            <button type="button" className="font-mono text-[0.8rem] text-accent hover:underline" onClick={() => useUi.getState().openPopup(e.id, entries.map((x) => x.id))}>
-              {e.id}
+          <li key={e.id} className="flex items-center gap-3 px-3 py-2.5">
+            <span className="w-6 shrink-0 text-right text-sm font-bold tabular-nums text-muted">{i + 1}</span>
+            <button type="button" className="min-w-0 flex-1 rounded text-left hover:underline" onClick={() => useUi.getState().openPopup(e.id, entries.map((x) => x.id))}>
+              <span className="block truncate">{e.preview || `Question ${e.id}`}</span>
+              <span className="block truncate text-[0.8125rem] text-muted">{e.skill}</span>
             </button>
-            <span className="min-w-0 flex-1 truncate" title={e.skill}>{e.skill}</span>
-            <DifficultyBadge value={e.difficulty} />
-            <button type="button" onClick={() => onRemove(e.id)} aria-label={`Remove question ${e.id}`} className="grid size-7 place-items-center rounded text-muted hover:bg-surface-2 hover:text-ink">
+            <DifficultyBadge value={e.difficulty} compact />
+            <button type="button" onClick={() => onRemove(e.id)} aria-label={`Remove question ${e.id}`} title="Remove" className="grid size-8 shrink-0 place-items-center rounded text-muted hover:bg-surface-2 hover:text-ink">
               <IconX width={16} height={16} />
             </button>
           </li>

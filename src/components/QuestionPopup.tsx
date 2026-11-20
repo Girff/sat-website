@@ -12,7 +12,8 @@ import { useData } from '../store/data';
 import { useSession } from '../store/session';
 import { useUi } from '../store/ui';
 import { Dialog, btn } from './Dialog';
-import { IconCheck, IconFlag, IconX } from './Icons';
+import { Flag } from './Badges';
+import { IconArrowLeft, IconArrowRight, IconCheck, IconFlag, IconPlus, IconX } from './Icons';
 import { ChoiceList } from './question/ChoiceList';
 import { AnswerReveal } from './question/Explain';
 import { GridIn } from './question/GridIn';
@@ -61,18 +62,18 @@ function PopupHeader({ entry, onClose }: { entry: IndexEntry; onClose: () => voi
           type="button"
           onClick={() => toggleSelected(entry.id)}
           aria-pressed={inSet}
-          className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium ${inSet ? 'border-accent bg-accent-soft text-accent' : 'border-line hover:bg-surface-2'}`}
+          className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-bold ${inSet ? 'border-ink bg-marker-soft' : 'border-control hover:bg-surface-2'}`}
         >
-          {inSet ? <IconCheck width={16} height={16} /> : <span aria-hidden className="text-base leading-none">+</span>}
-          {inSet ? 'In problem set' : 'Add to selection'}
+          {inSet ? <IconCheck width={16} height={16} /> : <IconPlus width={16} height={16} />}
+          {inSet ? 'Ticked for a set' : 'Tick for a set'}
         </button>
         <button
           type="button"
           onClick={() => toggleFlag(entry.id)}
           aria-pressed={flagged}
-          className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium ${flagged ? 'border-flag text-flag' : 'border-line hover:bg-surface-2'}`}
+          className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-bold ${flagged ? 'border-ink bg-marker-soft' : 'border-control hover:bg-surface-2'}`}
         >
-          <IconFlag width={16} height={16} className={flagged ? 'fill-current' : ''} />
+          {flagged ? <Flag /> : <IconFlag width={16} height={16} />}
           {flagged ? 'Flagged' : 'Flag'}
         </button>
         <button type="button" onClick={onClose} aria-label="Close question" title="Close (Esc)" className="grid size-9 place-items-center rounded-md text-muted hover:bg-surface-2 hover:text-ink">
@@ -147,15 +148,15 @@ function PopupBody({ entry, index, total, order, onPrev, onNext }: BodyProps) {
   });
 
   const footer = (
-    <div className="flex items-center gap-2 border-t border-line px-4 py-2.5 sm:px-5">
+    <div className="flex items-center gap-2 border-t border-line bg-surface-2 px-4 py-2.5 sm:px-5">
       <button type="button" onClick={onPrev} disabled={index <= 0} className={btn.secondary} title="Previous question (←)">
-        <span aria-hidden>←</span> Previous
+        <IconArrowLeft width={16} height={16} /> Previous
       </button>
       <p className="flex-1 text-center text-sm text-muted" aria-live="polite">
-        Question <span className="font-semibold text-ink tabular-nums">{index + 1}</span> of <span className="tabular-nums">{total.toLocaleString()}</span>
+        Question <span className="font-extrabold text-ink tabular-nums">{index + 1}</span> of <span className="tabular-nums">{total.toLocaleString()}</span>
       </p>
       <button type="button" onClick={onNext} disabled={index >= total - 1} className={btn.secondary} title="Next question (→)">
-        Next <span aria-hidden>→</span>
+        Next <IconArrowRight width={16} height={16} />
       </button>
     </div>
   );
@@ -215,9 +216,9 @@ function PopupBody({ entry, index, total, order, onPrev, onNext }: BodyProps) {
 function DesmosTip({ pattern }: { pattern: DesmosPattern }) {
   const p = DESMOS_PATTERNS[pattern];
   return (
-    <details className="mt-5 rounded-lg border border-line bg-surface-2 px-4 py-2.5 text-sm">
-      <summary className="cursor-pointer font-medium">{DESMOS_LABEL} tip: {p.label}</summary>
-      <p className="mt-2 text-muted">{p.how}</p>
+    <details className="mt-6 rounded-md border border-line-strong px-4 py-2.5 text-sm open:bg-surface-2">
+      <summary className="cursor-pointer font-bold">{DESMOS_LABEL} tip: {p.label}</summary>
+      <p className="mt-2 max-w-[68ch] leading-relaxed">{p.how}</p>
     </details>
   );
 }

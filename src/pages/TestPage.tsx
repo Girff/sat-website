@@ -2,7 +2,8 @@
 // answer eliminator, highlighter, calculator, reference sheet, timer and submit.
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { Dialog, btn } from '../components/Dialog';
-import { IconFlag, IconMoon, IconSun } from '../components/Icons';
+import { Flag } from '../components/Badges';
+import { IconArrowLeft, IconFlag, IconMoon, IconSun } from '../components/Icons';
 import { ChoiceList } from '../components/question/ChoiceList';
 import { AnswerReveal } from '../components/question/Explain';
 import { GridIn } from '../components/question/GridIn';
@@ -27,11 +28,11 @@ export default function TestPage() {
   if (test) return <TestRunner test={test} />;
   const last = history[history.length - 1];
   return (
-    <div className="mx-auto max-w-xl px-4 py-16 text-center">
-      <h1 className="text-2xl font-semibold tracking-tight">No test in progress</h1>
-      <p className="mt-2 text-muted">Build a problem set to start one.</p>
-      <div className="mt-6 flex flex-wrap justify-center gap-2">
-        <a href="#/build" className={btn.primary}>Build a problem set</a>
+    <div className="mx-auto max-w-xl px-4 py-20">
+      <h1 className="text-3xl font-extrabold">No test in progress</h1>
+      <p className="mt-2 text-muted">Build a set and start it, and the test opens here.</p>
+      <div className="mt-6 flex flex-wrap gap-2">
+        <a href="#/build" className={btn.primary}>Build a set</a>
         {last && <a href={`#/results/${last.key}`} className={btn.secondary}>Results of “{last.name}”</a>}
       </div>
     </div>
@@ -62,6 +63,7 @@ function TestRunner({ test }: { test: ActiveTest }) {
   const entry = byId.get(item.id);
   const isMath = entry?.section === 'math';
   const last = test.current === test.items.length - 1;
+  const answeredCount = test.items.filter((it) => (test.answers[it.id] ?? '').trim() !== '').length;
   const onWarn = useCallback(() => setWarning('5 minutes remaining.'), []);
 
   useEffect(() => {
@@ -74,14 +76,14 @@ function TestRunner({ test }: { test: ActiveTest }) {
     submitTest(false).catch((e) => setSubmitError(e instanceof Error ? e.message : String(e)));
   };
   const idx = TEXT_SCALES.indexOf(scale);
-  const toolBtn = (on: boolean) => `inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2.5 py-1.5 text-sm font-medium ${on ? 'bg-accent-soft text-accent' : 'text-ink hover:bg-surface-2'}`;
+  const toolBtn = (on: boolean) => `inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md border px-2.5 py-1.5 text-sm font-bold ${on ? 'border-ink bg-marker-soft text-ink' : 'border-transparent text-ink hover:bg-surface-2'}`;
 
   return (
     <div className="flex h-dvh flex-col bg-surface">
-      <header className="border-b-2 border-dashed border-line-strong">
+      <header className="border-b-2 border-dashed border-control">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2">
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-sm font-semibold">{test.name}</h1>
+            <h1 className="truncate text-[0.9375rem] font-extrabold">{test.name}</h1>
             <p className="text-xs text-muted">{entry ? SECTION_LABEL[entry.section] : ''}</p>
           </div>
           <Timer startedAt={test.startedAt} deadline={test.deadline} stopwatch={test.config.timer === 'stopwatch'} onWarn={onWarn} />
@@ -89,7 +91,7 @@ function TestRunner({ test }: { test: ActiveTest }) {
             {!isMath && highlightSupported() && (
               <button type="button" className={toolBtn(highlighter)} aria-pressed={highlighter} onClick={() => setHighlighter((h) => !h)}
                 title="Select passage text to highlight it; click a highlight to remove it">
-                <span aria-hidden className="h-3 w-3 shrink-0 rounded-sm bg-[#fde68a] ring-1 ring-line-strong" />Highlight
+                <span aria-hidden className="h-3 w-4 shrink-0 -skew-x-12 rounded-sm bg-marker ring-1 ring-ink/30" />Highlight
               </button>
             )}
             {isMath && (
@@ -98,9 +100,9 @@ function TestRunner({ test }: { test: ActiveTest }) {
                 <button type="button" className={toolBtn(false)} onClick={() => setRefOpen(true)}>Reference</button>
               </>
             )}
-            <div className="flex shrink-0 items-center rounded-md border border-line" role="group" aria-label="Text size">
-              <button type="button" className="px-2 py-1 text-xs font-semibold text-muted hover:text-ink disabled:opacity-40" onClick={() => setScale(TEXT_SCALES[idx - 1])} disabled={idx <= 0} aria-label="Smaller text">A−</button>
-              <button type="button" className="border-l border-line px-2 py-1 text-sm font-semibold text-muted hover:text-ink disabled:opacity-40" onClick={() => setScale(TEXT_SCALES[idx + 1])} disabled={idx >= TEXT_SCALES.length - 1} aria-label="Larger text">A+</button>
+            <div className="flex shrink-0 items-center rounded-md border border-line-strong" role="group" aria-label="Text size">
+              <button type="button" className="px-2 py-1 text-xs font-bold text-muted hover:text-ink disabled:opacity-35" onClick={() => setScale(TEXT_SCALES[idx - 1])} disabled={idx <= 0} aria-label="Smaller text">A−</button>
+              <button type="button" className="border-l border-line-strong px-2 py-1 text-sm font-bold text-muted hover:text-ink disabled:opacity-35" onClick={() => setScale(TEXT_SCALES[idx + 1])} disabled={idx >= TEXT_SCALES.length - 1} aria-label="Larger text">A+</button>
             </div>
             <button type="button" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="grid size-8 shrink-0 place-items-center rounded-md text-muted hover:bg-surface-2 hover:text-ink" aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
               {theme === 'dark' ? <IconSun width={18} height={18} /> : <IconMoon width={18} height={18} />}
@@ -110,12 +112,12 @@ function TestRunner({ test }: { test: ActiveTest }) {
           </div>
         </div>
         {warning && (
-          <div role="alert" className="flex items-center gap-3 bg-hard-soft px-4 py-1.5 text-sm font-semibold text-hard">
+          <div role="alert" className="flex items-center gap-3 bg-marker px-4 py-1.5 text-sm font-extrabold text-marker-ink">
             <span className="flex-1">{warning}</span>
-            <button type="button" className="text-xs underline" onClick={() => setWarning(null)}>Dismiss</button>
+            <button type="button" className="text-sm underline" onClick={() => setWarning(null)}>Dismiss</button>
           </div>
         )}
-        {submitError && <p role="alert" className="bg-hard-soft px-4 py-1.5 text-sm text-hard">Couldn’t submit: {submitError}. Check your connection and try again.</p>}
+        {submitError && <p role="alert" className="bg-bad-soft px-4 py-1.5 text-sm font-bold text-bad">Couldn’t submit: {submitError}. Check your connection and try again.</p>}
       </header>
 
       <div className="flex min-h-0 flex-1 flex-col md:flex-row">
@@ -130,21 +132,21 @@ function TestRunner({ test }: { test: ActiveTest }) {
         />
       </div>
 
-      <footer className="relative flex items-center gap-2 border-t border-line px-4 py-2.5">
-        <div className="hidden flex-1 text-sm text-muted sm:block">{test.items.length} questions</div>
+      <footer className="relative flex items-center gap-2 border-t border-line bg-surface-2 px-4 py-2.5">
+        <div className="hidden flex-1 text-sm text-muted sm:block">{answeredCount} of {test.items.length} answered</div>
         <button
           type="button"
           data-nav-toggle
           aria-expanded={navOpen}
           onClick={() => setNavOpen((o) => !o)}
-          className="mx-auto inline-flex items-center gap-1.5 rounded-md bg-ink px-3 py-1.5 text-sm font-semibold text-bg hover:opacity-90"
+          className="mx-auto inline-flex items-center gap-1.5 rounded-md bg-ink px-3 py-1.5 text-sm font-extrabold text-bg hover:opacity-90"
         >
           Question {test.current + 1} of {test.items.length}
           <span aria-hidden className={`inline-block transition-transform ${navOpen ? '' : 'rotate-180'}`}>▾</span>
         </button>
         {navOpen && <NavigatorPanel test={test} onJump={goTo} onClose={() => setNavOpen(false)} onReview={() => { setNavOpen(false); setSubmitOpen(true); }} />}
         <div className="flex flex-1 justify-end gap-2">
-          <button type="button" className={btn.secondary} disabled={test.current === 0} onClick={() => goTo(test.current - 1)}>Back</button>
+          <button type="button" className={btn.secondary} disabled={test.current === 0} onClick={() => goTo(test.current - 1)}><IconArrowLeft width={16} height={16} className="max-sm:hidden" />Back</button>
           <button type="button" className={btn.primary} onClick={() => (last ? setSubmitOpen(true) : goTo(test.current + 1))}>{last ? 'Review & submit' : 'Next'}</button>
         </div>
       </footer>
@@ -166,7 +168,7 @@ function TestRunner({ test }: { test: ActiveTest }) {
       >
         <p className="px-5 py-4 text-sm">
           Your answers are kept and {test.deadline ? 'the countdown keeps running' : 'you can pick up where you left off'}.
-          Return to it from <strong>Build Test</strong>. Discarding the test throws its answers away.
+          Resume it from the top bar or the <strong>Build a set</strong> page. Discarding the test throws its answers away.
         </p>
       </Dialog>
     </div>
@@ -239,15 +241,15 @@ function TestQuestion({ test, highlighter, onPrev, onNext }: QuestionProps) {
   const marked = !!test.marked[item.id];
   const outcome = grade(q, value);
   const toolbar = (
-    <div className="mb-4 flex items-center gap-3 border-b border-line pb-2">
-      <span className="grid h-8 min-w-8 place-items-center rounded bg-ink px-2 text-sm font-bold text-bg tabular-nums"><span className="sr-only">Question </span>{test.current + 1}</span>
+    <div className="mb-5 flex items-center gap-3 border-b-2 border-dashed border-line-strong bg-surface-2 py-1.5 pl-0 pr-1.5">
+      <span className="grid h-9 min-w-9 place-items-center bg-ink px-2 text-base font-extrabold text-bg tabular-nums"><span className="sr-only">Question </span>{test.current + 1}</span>
       <button type="button" aria-pressed={marked} onClick={() => toggleMarked(item.id)}
-        className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium ${marked ? 'text-flag' : 'text-ink hover:bg-surface-2'}`}>
-        <IconFlag width={17} height={17} className={marked ? 'fill-current' : ''} />Mark for Review
+        className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm font-bold text-ink hover:bg-surface-3">
+        {marked ? <Flag size={18} /> : <IconFlag width={18} height={18} />}Mark for Review
       </button>
       {q.type === 'mcq' && (
         <button type="button" aria-pressed={eliminator} onClick={() => setEliminator((x) => !x)} title="Cross out answer choices"
-          className={`ml-auto rounded-md border px-2 py-0.5 text-sm font-bold ${eliminator ? 'border-accent bg-accent text-accent-ink' : 'border-line-strong hover:bg-surface-2'}`}>
+          className={`ml-auto rounded-md border px-2 py-0.5 text-sm font-extrabold ${eliminator ? 'border-ink bg-ink text-bg' : 'border-control bg-surface hover:bg-surface-3'}`}>
           <span className="sr-only">Answer eliminator</span><span aria-hidden className="line-through">ABC</span>
         </button>
       )}

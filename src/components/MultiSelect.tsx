@@ -65,12 +65,12 @@ export function MultiSelect<V extends string>({ label, options, selected, onChan
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen((o) => !o)}
-        className={`flex h-9 items-center gap-1.5 rounded-md border px-3 text-sm font-medium ${
-          selected.length ? 'border-accent bg-accent-soft text-accent' : 'border-line bg-surface text-ink hover:border-line-strong'
+        className={`flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md border px-3 text-sm font-bold ${
+          selected.length ? 'border-ink bg-marker-soft text-ink' : 'border-line-strong bg-surface text-ink hover:border-control'
         }`}
       >
         {label}
-        {selected.length > 0 && <span className="rounded-full bg-accent px-1.5 text-xs leading-5 text-accent-ink">{selected.length}</span>}
+        {selected.length > 0 && <span className="rounded-full bg-ink px-1.5 text-xs leading-5 text-bg">{selected.length}</span>}
         <IconChevron width={16} height={16} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
@@ -78,20 +78,20 @@ export function MultiSelect<V extends string>({ label, options, selected, onChan
           id={panelId}
           role="group"
           aria-label={`${label} filter`}
-          className={`absolute z-40 mt-1 max-h-[min(28rem,70vh)] w-[min(20rem,calc(100vw-2rem))] overflow-auto rounded-lg border border-line bg-surface p-1 shadow-lg ${alignRight ? 'right-0' : 'left-0'}`}
+          className={`absolute z-40 mt-1 max-h-[min(28rem,70vh)] w-[min(21rem,calc(100vw-2rem))] overflow-auto rounded-lg border border-line-strong bg-surface p-1 shadow-[0_16px_40px_-12px_rgb(28_31_36/0.3)] ${alignRight ? 'right-0' : 'left-0'}`}
         >
           {groups.map((g, gi) => (
             <div key={gi} role={g.name ? 'group' : undefined} aria-label={g.name}>
-              {g.name && <div className="px-2 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-muted">{g.name}</div>}
+              {g.name && <div className="px-2 pb-1 pt-2.5 text-sm font-bold text-muted">{g.name}</div>}
               {g.items.map((o) => {
                 const checked = selected.includes(o.value);
                 const empty = o.count === 0 && !checked;
                 return (
                   <label
                     key={o.value}
-                    className={`flex cursor-pointer items-start gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-surface-2 ${empty ? 'text-muted' : ''}`}
+                    className={`flex cursor-pointer items-start gap-2.5 rounded px-2 py-1.5 text-sm hover:bg-surface-2 ${empty ? 'text-muted' : ''}`}
                   >
-                    <input type="checkbox" className="mt-0.5 size-4 shrink-0 accent-[var(--c-accent)]" checked={checked} onChange={() => toggle(o.value)} />
+                    <input type="checkbox" className="check mt-0.5" checked={checked} onChange={() => toggle(o.value)} />
                     <span className="flex-1">{o.label}</span>
                     {o.count !== undefined && <span className="tabular-nums text-xs text-muted">{o.count.toLocaleString()}</span>}
                   </label>
@@ -104,7 +104,7 @@ export function MultiSelect<V extends string>({ label, options, selected, onChan
               type="button"
               disabled={!selected.length}
               onClick={() => onChange([])}
-              className="rounded px-2 py-1 text-xs font-medium text-accent hover:bg-accent-soft disabled:text-muted disabled:hover:bg-transparent"
+              className="rounded px-2 py-1 text-sm font-bold underline decoration-control underline-offset-2 hover:bg-surface-2 disabled:text-muted disabled:no-underline disabled:hover:bg-transparent"
             >
               Clear {label.toLowerCase()}
             </button>

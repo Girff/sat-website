@@ -11,6 +11,7 @@
     "extract": "python3 scripts/extract.py && python3 scripts/validate.py"
   },
   "dependencies": {
+    "@fontsource-variable/atkinson-hyperlegible-next": "^5.3.0",
     "@fontsource-variable/source-serif-4": "^5.3.0",
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/react-virtual": "^3.14.13",

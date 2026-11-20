@@ -19,3 +19,17 @@ export const IconArrowUp = (p: P) => (<svg {...base(p)}><path d="M10 16V4M5 9l5-
 export const IconArrowDown = (p: P) => (<svg {...base(p)}><path d="M10 4v12M5 11l5 5 5-5" /></svg>);
 export const IconSort = (p: P) => (<svg {...base(p)}><path d="M7 8l3-3 3 3M7 12l3 3 3-3" /></svg>);
 export const IconDot = (p: P) => (<svg {...base(p)}><path d="M6 10h8" /></svg>);
+export const IconArrowLeft = (p: P) => (<svg {...base(p)}><path d="M16 10H4M9 5l-5 5 5 5" /></svg>);
+export const IconArrowRight = (p: P) => (<svg {...base(p)}><path d="M4 10h12M11 5l5 5-5 5" /></svg>);
+export const IconSliders = (p: P) => (<svg {...base(p)}><path d="M3 6h8M15 6h2M3 14h2M9 14h8" /><circle cx="13" cy="6" r="2" /><circle cx="7" cy="14" r="2" /></svg>);
+export const IconPrint = (p: P) => (<svg {...base(p)}><path d="M5.5 7.5V3h9v4.5M5.5 14H3.5V8.5a1 1 0 011-1h11a1 1 0 011 1V14h-2" /><path d="M5.5 11.5h9V17h-9z" /></svg>);
+export const IconPlus = (p: P) => (<svg {...base(p)}><path d="M10 4v12M4 10h12" /></svg>);
+
+/** The logo: a row of answer bubbles with one filled in. */
+export const LogoMark = (p: P) => (
+  <svg width={30} height={20} viewBox="0 0 30 20" aria-hidden {...p}>
+    <ellipse cx="5" cy="10" rx="4" ry="5.6" fill="none" stroke="currentColor" strokeWidth="1.6" />
+    <ellipse cx="15" cy="10" rx="4.4" ry="6" fill="var(--c-marker)" stroke="currentColor" strokeWidth="1.8" />
+    <ellipse cx="25" cy="10" rx="4" ry="5.6" fill="none" stroke="currentColor" strokeWidth="1.6" />
+  </svg>
+);

@@ -11,8 +11,7 @@ import { useUi } from './store/ui';
 const BuildPage = lazy(() => import('./pages/BuildPage'));
 const TestPage = lazy(() => import('./pages/TestPage'));
 const ResultsPage = lazy(() => import('./pages/ResultsPage'));
-const HistoryPage = lazy(() => import('./pages/HistoryPage'));
-const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const ProgressPage = lazy(() => import('./pages/ProgressPage'));
 const PrintPage = lazy(() => import('./pages/PrintPage'));
 const QuestionPopup = lazy(() => import('./components/QuestionPopup'));
 // Dev-only: excluded from production builds by the static DEV check.
@@ -56,8 +55,8 @@ export default function App() {
   else if (path === '/build') page = <BuildPage />;
   else if (path === '/test') page = <TestPage />;
   else if (path.startsWith('/results/')) page = <ResultsPage />;
-  else if (path === '/history') page = <HistoryPage />;
-  else if (path === '/dashboard') page = <DashboardPage />;
+  // History and Dashboard were merged into Progress; the old addresses still work
+  else if (path === '/progress' || path === '/history' || path === '/dashboard') page = <ProgressPage />;
   else if (path === '/print') page = <PrintPage />;
   else if (path === '/qa' && QaPage) page = <QaPage />;
   else page = <NotFound />;
@@ -66,12 +65,12 @@ export default function App() {
   return (
     <>
       <a href="#main" onClick={(e) => { e.preventDefault(); document.getElementById('main')?.focus(); }}
-        className="sr-only z-50 rounded bg-accent px-3 py-2 text-accent-ink focus:not-sr-only focus:fixed focus:left-2 focus:top-2">
+        className="sr-only z-50 rounded bg-marker px-3 py-2 font-bold text-marker-ink focus:not-sr-only focus:fixed focus:left-2 focus:top-2">
         Skip to content
       </a>
       {!inTest && <TopNav />}
       <main id="main" tabIndex={-1} className="outline-none">
-        <Suspense fallback={<p className="p-8 text-center text-muted">Loading…</p>}>{page}</Suspense>
+        <Suspense fallback={<p className="p-8 text-center text-muted" role="status">Loading…</p>}>{page}</Suspense>
       </main>
       {popupOpen && <Suspense fallback={null}><QuestionPopup /></Suspense>}
     </>
@@ -80,9 +79,11 @@ export default function App() {
 
 function NotFound() {
   return (
-    <div className="mx-auto max-w-xl px-4 py-16 text-center">
-      <h1 className="text-xl font-semibold">Page not found</h1>
-      <a href="#/" className="mt-4 inline-block text-accent underline">Go to the question bank</a>
+    <div className="mx-auto max-w-xl px-4 py-20">
+      <span className="bubble !text-base" aria-hidden>?</span>
+      <h1 className="mt-4 text-3xl font-extrabold">This page doesn’t exist</h1>
+      <p className="mt-2 text-muted">The link may be from an older version of the site.</p>
+      <a href="#/" className="link mt-6 inline-block">Go to the questions</a>
     </div>
   );
 }

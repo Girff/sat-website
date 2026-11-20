@@ -48,12 +48,13 @@ export function QuestionLayout({ q, passage, children, toolbar }: Props) {
 /** ID, section, domain, skill and difficulty. */
 export function QuestionMeta({ entry, as: Tag = 'p', id }: { entry: Pick<IndexEntry, 'id' | 'section' | 'domain' | 'skill' | 'difficulty'>; as?: 'p' | 'h2'; id?: string }) {
   return (
-    <Tag id={id} className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-      <span className="font-mono font-semibold">{entry.id}</span>
-      <span className="min-w-0 text-muted">
-        {SECTION_LABEL[entry.section]} <span aria-hidden>·</span> {entry.domain} <span aria-hidden>·</span> <span className="text-ink">{entry.skill}</span>
+    <Tag id={id} className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
+      <span className="min-w-0">
+        <span className="font-extrabold">{entry.skill}</span>
+        <span className="ml-2 text-sm text-muted">{entry.domain}, {SECTION_LABEL[entry.section]}</span>
       </span>
       <DifficultyBadge value={entry.difficulty} />
+      <span className="text-sm text-muted"><span className="sr-only">Question ID </span>{entry.id}</span>
     </Tag>
   );
 }
