@@ -65,7 +65,7 @@ export function Generator({ entries, answered, options: o, onChange }: Props) {
       />
 
       <div className="flex flex-wrap items-end gap-x-6 gap-y-4">
-        <label className="text-sm font-semibold">
+        <label className="text-sm font-bold">
           Number of questions
           <input
             type="number"
@@ -73,11 +73,11 @@ export function Generator({ entries, answered, options: o, onChange }: Props) {
             max={100}
             value={o.count}
             onChange={(e) => onChange({ count: Math.min(100, Math.max(1, Math.round(Number(e.target.value)) || 1)) })}
-            className="mt-1.5 block h-10 w-28 rounded-md border border-line-strong bg-surface px-3 text-right font-normal tabular-nums"
+            className="mt-1.5 block h-10 w-28 rounded-md border border-control bg-surface px-3 text-right text-base font-normal tabular-nums"
           />
         </label>
         <div>
-          <p className="mb-1.5 text-sm font-semibold">Topics</p>
+          <p className="mb-1.5 text-sm font-bold">Topics</p>
           <div className="flex flex-wrap gap-2">
             <MultiSelect label="Domain" options={domains} selected={o.domains} onChange={(ds) => {
               const skillOk = (s: string) => !ds.length || ds.includes(domainOfSkill.get(s) ?? '');
@@ -88,16 +88,16 @@ export function Generator({ entries, answered, options: o, onChange }: Props) {
         </div>
       </div>
 
-      <label className="flex items-start gap-2 text-sm">
+      <label className="flex cursor-pointer items-start gap-2.5 text-[0.9375rem]">
         <input
           type="checkbox"
-          className="mt-0.5 size-4 accent-[var(--c-accent)]"
+          className="check mt-1"
           checked={o.desmosOnly}
           onChange={(e) => setDesmosOnly(e.target.checked)}
         />
         <span>
           Only Desmos regression questions
-          <span className="block text-xs text-muted">
+          <span className="block text-sm text-muted">
             {desmosTotal.toLocaleString()} Math questions that are good practice for Desmos’s ~ regression: tables of values,
             points and function values, equivalent expressions, infinitely many solutions, and lines of best fit
           </span>
@@ -125,36 +125,36 @@ export function Generator({ entries, answered, options: o, onChange }: Props) {
                   max={100}
                   value={o.mix![d]}
                   onChange={(e) => onChange({ mix: { ...o.mix!, [d]: Math.min(100, Math.max(0, Math.round(Number(e.target.value)) || 0)) } })}
-                  className="h-9 w-20 rounded-md border border-line-strong bg-surface px-2 text-right tabular-nums"
+                  className="h-9 w-20 rounded-md border border-control bg-surface px-2 text-right tabular-nums"
                   aria-describedby="mix-total"
                 />
                 %
               </label>
             ))}
-            <p id="mix-total" className={`text-sm ${total === 100 ? 'text-muted' : 'font-semibold text-hard'}`} aria-live="polite">
-              {total === 100 ? (plan ? `${plan.Easy} Easy · ${plan.Medium} Medium · ${plan.Hard} Hard` : '') : `Adds up to ${total}%; make it 100%.`}
+            <p id="mix-total" className={`text-sm ${total === 100 ? 'text-muted' : 'font-bold text-bad'}`} aria-live="polite">
+              {total === 100 ? (plan ? `${plan.Easy} Easy, ${plan.Medium} Medium, ${plan.Hard} Hard` : '') : `Adds up to ${total}%; make it 100%.`}
             </p>
           </div>
         )}
       </div>
 
-      <label className="flex items-start gap-2 text-sm">
+      <label className="flex cursor-pointer items-start gap-2.5 text-[0.9375rem]">
         <input
           type="checkbox"
-          className="mt-0.5 size-4 accent-[var(--c-accent)]"
+          className="check mt-1"
           checked={o.excludeAnswered}
           onChange={(e) => onChange({ excludeAnswered: e.target.checked })}
         />
         <span>
-          Exclude questions already answered this session
-          <span className="block text-xs text-muted">{answered.size.toLocaleString()} answered so far</span>
+          Skip questions you’ve already answered
+          <span className="block text-sm text-muted">{answered.size.toLocaleString()} answered this session</span>
         </span>
       </label>
 
-      <p className="text-sm" aria-live="polite">
-        <strong className="tabular-nums">{pool.length.toLocaleString()}</strong> question{pool.length === 1 ? '' : 's'} match.
-        {pool.length < o.count && pool.length > 0 && <span className="text-medium"> The set will have {pool.length}.</span>}
-        {pool.length === 0 && <span className="text-hard"> Loosen the filters to generate a set.</span>}
+      <p className="border-t border-line pt-4 text-[0.9375rem]" aria-live="polite">
+        <strong className="font-extrabold tabular-nums">{pool.length.toLocaleString()}</strong> question{pool.length === 1 ? '' : 's'} to pick from.
+        {pool.length < o.count && pool.length > 0 && <span className="text-warn"> The set will have {pool.length}.</span>}
+        {pool.length === 0 && <span className="text-bad"> Remove a topic or turn off a filter to get questions.</span>}
         {short.length > 0 && <span className="text-muted"> Not enough {short.join(' and ')} questions; the rest are filled from other difficulties.</span>}
       </p>
     </div>

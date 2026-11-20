@@ -45,7 +45,7 @@ export function TransferControls() {
   return (
     <div className="flex flex-wrap items-center gap-2 print:hidden">
       <button type="button" className={btn.secondary} onClick={doExport} disabled={!hasData}>
-        Export results{dirty && <span className="rounded-full bg-medium-soft px-1.5 text-xs text-medium">unsaved</span>}
+        Export results{dirty && <span className="rounded-full bg-warn-soft px-1.5 text-xs font-bold text-warn">not exported</span>}
       </button>
       <button type="button" className={btn.secondary} onClick={() => input.current?.click()} disabled={!byId.size}>Import results</button>
       <input
@@ -59,7 +59,7 @@ export function TransferControls() {
           if (f) void doImport(f);
         }}
       />
-      <p role="status" className={`basis-full text-sm ${message?.ok === false ? 'text-hard' : 'text-muted'}`}>{message?.text}</p>
+      <p role="status" className={`basis-full text-sm ${message?.ok === false ? 'text-bad' : 'text-muted'}`}>{message?.text}</p>
     </div>
   );
 }

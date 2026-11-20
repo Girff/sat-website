@@ -4,7 +4,7 @@ import {
 } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent } from 'react';
-import { DifficultyBadge, StatusBadges } from '../../components/Badges';
+import { DifficultyBadge, StatusBubble } from '../../components/Badges';
 import { IconArrowDown, IconArrowUp, IconSort } from '../../components/Icons';
 import type { QStatus } from '../../lib/filters';
 import type { Difficulty, IndexEntry } from '../../lib/types';
@@ -13,13 +13,12 @@ import { useUi } from '../../store/ui';
 
 const LEVEL: Record<Difficulty, number> = { Easy: 1, Medium: 2, Hard: 3 };
 const statusRank = (s: QStatus | undefined) => (s?.result === 'incorrect' ? 3 : s?.result === 'correct' ? 2 : 0) + (s?.flagged ? 1 : 0);
-const ROW_REM = 2.75;
+const ROW_REM = 3.6;
 
 interface Props {
   rows: IndexEntry[];
   sorting: SortingState;
   onSortingChange: (s: SortingState) => void;
-  showSection: boolean;
   onOpen: (id: string, order: string[]) => void;
   labelledBy?: string;
 }
@@ -27,19 +26,16 @@ interface Props {
 /** Column widths (CSS grid tracks) and the container widths at which they appear. */
 const TRACKS: Record<string, { track: string; minWidth: number }> = {
   select: { track: '2.75rem', minWidth: 0 },
-  id: { track: '7rem', minWidth: 0 },
-  section: { track: '5.75rem', minWidth: 900 },
-  domain: { track: 'minmax(9rem,1fr)', minWidth: 760 },
-  skill: { track: 'minmax(10rem,1.3fr)', minWidth: 0 },
-  difficulty: { track: '7rem', minWidth: 0 },
-  type: { track: '5.5rem', minWidth: 1000 },
-  preview: { track: 'minmax(12rem,2fr)', minWidth: 1100 },
-  status: { track: '7.5rem', minWidth: 560 },
+  status: { track: '3.25rem', minWidth: 0 },
+  skill: { track: 'minmax(0,1fr)', minWidth: 0 },
+  difficulty: { track: '7.25rem', minWidth: 0 },
+  type: { track: '8.5rem', minWidth: 760 },
+  id: { track: '6.5rem', minWidth: 600 },
 };
-/** Narrow screens (phones): tighter tracks so ID, skill and difficulty fit. */
-const COMPACT: Record<string, string> = { select: '2.25rem', id: '5.5rem', skill: 'minmax(5rem,1fr)', difficulty: '6rem' };
+/** Narrow screens (phones): the difficulty column shows only its meter. */
+const COMPACT: Record<string, string> = { select: '2.5rem', status: '2.75rem', difficulty: '3rem' };
 
-export function QuestionTable({ rows, sorting, onSortingChange, showSection, onOpen, labelledBy }: Props) {
+export function QuestionTable({ rows, sorting, onSortingChange, onOpen, labelledBy }: Props) {
   const status = useSession((s) => s.status);
   const selected = useSession((s) => s.selected);
   const toggleSelected = useSession((s) => s.toggleSelected);
@@ -58,31 +54,40 @@ export function QuestionTable({ rows, sorting, onSortingChange, showSection, onO
     return () => ro.disconnect();
   }, []);
 
+  const compact = width < 520 * textScale;
   const columns = useMemo<ColumnDef<IndexEntry>[]>(() => [
     { id: 'select', header: 'Select', enableSorting: false, cell: () => null },
-    { id: 'id', accessorKey: 'id', header: 'Question ID', sortingFn: 'text', cell: (c) => <span className="font-mono text-[0.8rem]">{c.getValue<string>()}</span> },
-    { id: 'section', accessorFn: (r) => (r.section === 'math' ? 'Math' : 'R&W'), header: 'Section', sortingFn: 'text' },
-    { id: 'domain', accessorKey: 'domain', header: 'Domain', sortingFn: 'text' },
-    { id: 'skill', accessorKey: 'skill', header: 'Skill', sortingFn: 'text' },
+    {
+      id: 'status', accessorFn: (r) => statusRank(status[r.id]), header: 'Status',
+      cell: (c) => <StatusBubble status={status[c.row.original.id]} />,
+    },
+    {
+      id: 'skill', accessorKey: 'skill', header: 'Question', sortingFn: 'text',
+      cell: (c) => {
+        const e = c.row.original;
+        return (
+          <>
+            <span className="block truncate text-[0.9375rem]">{e.preview || `Question ${e.id}`}</span>
+            <span className="block truncate text-[0.8125rem] text-muted">{e.skill}</span>
+          </>
+        );
+      },
+    },
     {
       id: 'difficulty', accessorKey: 'difficulty', header: 'Difficulty',
       sortingFn: (a, b) => LEVEL[a.original.difficulty] - LEVEL[b.original.difficulty],
-      cell: (c) => <DifficultyBadge value={c.getValue<Difficulty>()} />,
+      cell: (c) => <DifficultyBadge value={c.getValue<Difficulty>()} compact={compact} />,
     },
-    { id: 'type', accessorFn: (r) => (r.type === 'mcq' ? 'MCQ' : 'Grid-in'), header: 'Type', sortingFn: 'text' },
-    { id: 'preview', accessorKey: 'preview', header: 'Preview', enableSorting: false },
-    {
-      id: 'status', accessorFn: (r) => statusRank(status[r.id]), header: 'Status',
-      cell: (c) => <StatusBadges status={status[c.row.original.id]} />,
-    },
-  ], [status]);
+    { id: 'type', accessorFn: (r) => (r.type === 'mcq' ? 'Multiple choice' : 'Grid-in'), header: 'Type', sortingFn: 'text',
+      cell: (c) => <span className="text-sm">{c.getValue<string>()}</span> },
+    { id: 'id', accessorKey: 'id', header: 'ID', sortingFn: 'text', cell: (c) => <span className="text-[0.8125rem] text-muted">{c.getValue<string>()}</span> },
+  ], [status, compact]);
 
   const columnVisibility = useMemo<VisibilityState>(() => {
     const v: VisibilityState = {};
     for (const [id, t] of Object.entries(TRACKS)) v[id] = width >= t.minWidth * textScale;
-    v.section = v.section && showSection;
     return v;
-  }, [width, showSection, textScale]);
+  }, [width, textScale]);
 
   const table = useReactTable({
     data: rows,
@@ -100,7 +105,6 @@ export function QuestionTable({ rows, sorting, onSortingChange, showSection, onO
   const model = table.getRowModel().rows;
   const order = useMemo(() => model.map((r) => r.original.id), [model]);
   const visible = table.getVisibleLeafColumns();
-  const compact = width < 520 * textScale;
   const grid = visible.map((c) => (compact && COMPACT[c.id]) || TRACKS[c.id].track).join(' ');
   const rowPx = ROW_REM * 16 * textScale;
 
@@ -166,10 +170,10 @@ export function QuestionTable({ rows, sorting, onSortingChange, showSection, onO
       role="table"
       aria-labelledby={labelledBy}
       aria-rowcount={model.length + 1}
-      className="h-full overflow-auto rounded-lg border border-line bg-surface"
+      className="h-full overflow-auto rounded-md border border-line-strong bg-surface"
     >
-      <div role="rowgroup" className="sticky top-0 z-10 border-b border-line bg-surface-2">
-        <div role="row" aria-rowindex={1} className="grid items-center text-left text-xs font-semibold text-muted" style={{ gridTemplateColumns: grid }}>
+      <div role="rowgroup" className="sticky top-0 z-10 border-b border-line-strong bg-surface-2">
+        <div role="row" aria-rowindex={1} className="grid items-center text-left text-[0.8125rem] font-bold text-muted" style={{ gridTemplateColumns: grid }}>
           {table.getFlatHeaders().filter((h) => h.column.getIsVisible()).map((h) => {
             if (h.id === 'select') {
               return (
@@ -177,7 +181,7 @@ export function QuestionTable({ rows, sorting, onSortingChange, showSection, onO
                   <input
                     ref={headerBox}
                     type="checkbox"
-                    className="size-4 accent-[var(--c-accent)]"
+                    className="check"
                     checked={allSelected}
                     onChange={() => setSelected(order, !allSelected)}
                     aria-label={allSelected ? 'Deselect all matching questions' : `Select all ${order.length.toLocaleString()} matching questions`}
@@ -200,9 +204,11 @@ export function QuestionTable({ rows, sorting, onSortingChange, showSection, onO
                     type="button"
                     onClick={h.column.getToggleSortingHandler()}
                     title="Sort. Shift-click to add a secondary sort."
-                    className={`inline-flex max-w-full items-center gap-1 rounded hover:text-ink ${sorted ? 'text-accent' : ''}`}
+                    className={`inline-flex max-w-full items-center gap-1 rounded hover:text-ink ${sorted ? 'text-ink' : ''}`}
                   >
-                    <span className="truncate">{compact && h.id === 'id' ? 'ID' : flexRender(h.column.columnDef.header, h.getContext())}</span>
+                    <span className={`truncate ${sorted ? 'shadow-[inset_0_-0.45em_0_var(--c-marker)] dark:shadow-none' : ''}`}>
+                      {(compact && h.id === 'difficulty') || h.id === 'status' ? <span className="sr-only">{h.id === 'status' ? 'Status' : 'Difficulty'}</span> : flexRender(h.column.columnDef.header, h.getContext())}
+                    </span>
                     {sorted === 'asc' ? <IconArrowUp width={14} height={14} /> : sorted === 'desc' ? <IconArrowDown width={14} height={14} /> : <IconSort width={14} height={14} className="opacity-40" />}
                     {sortIndex >= 0 && <span className="text-[0.65rem] tabular-nums">{sortIndex + 1}</span>}
                   </button>
@@ -230,7 +236,7 @@ export function QuestionTable({ rows, sorting, onSortingChange, showSection, onO
               onFocus={() => setActive(vi.index)}
               onClick={() => onOpen(id, order)}
               onKeyDown={(e) => onRowKey(e, vi.index)}
-              className={`absolute left-0 top-0 grid w-full cursor-pointer items-center border-b border-line text-sm hover:bg-surface-2 focus-visible:-outline-offset-2 ${isSel ? 'bg-accent-soft/60' : ''}`}
+              className={`absolute left-0 top-0 grid w-full cursor-pointer items-center border-b border-line text-sm focus-visible:-outline-offset-2 ${isSel ? 'bg-marker-soft hover:brightness-[0.98]' : 'hover:bg-surface-2'}`}
               style={{ gridTemplateColumns: grid, height: vi.size, transform: `translateY(${vi.start}px)` }}
             >
               {row.getVisibleCells().map((cell) => {
@@ -240,7 +246,7 @@ export function QuestionTable({ rows, sorting, onSortingChange, showSection, onO
                       <input
                         type="checkbox"
                         tabIndex={-1}
-                        className="size-4 accent-[var(--c-accent)]"
+                        className="check"
                         checked={isSel}
                         readOnly
                         aria-label={`Select question ${id}`}
@@ -248,13 +254,13 @@ export function QuestionTable({ rows, sorting, onSortingChange, showSection, onO
                     </div>
                   );
                 }
-                const text = cell.column.id === 'preview' || cell.column.id === 'skill' || cell.column.id === 'domain';
+                const question = cell.column.id === 'skill';
                 return (
                   <div
                     role="cell"
                     key={cell.id}
-                    className={`min-w-0 px-2 ${text ? 'truncate' : ''} ${cell.column.id === 'preview' ? 'text-muted' : ''}`}
-                    title={text ? String(cell.getValue() ?? '') : undefined}
+                    className={`min-w-0 px-2 ${cell.column.id === 'status' ? 'flex justify-center' : ''}`}
+                    title={question ? row.original.preview : undefined}
                   >
                     {flexRender(cell.column.columnDef.cell ?? ((c) => String(c.getValue() ?? '')), cell.getContext())}
                   </div>

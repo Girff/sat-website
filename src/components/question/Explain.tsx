@@ -22,30 +22,30 @@ export function CorrectAnswer({ q, order }: { q: Question; order?: ChoiceOrder }
   const [first, ...rest] = q.correct;
   return (
     <>
-      <strong className="font-mono">{first}</strong>
-      {rest.length > 0 && <span className="text-muted"> (also accepted: <span className="font-mono">{rest.join(', ')}</span>)</span>}
+      <strong>{first}</strong>
+      {rest.length > 0 && <span className="text-muted"> (also accepted: {rest.join(', ')})</span>}
     </>
   );
 }
 
 export function Verdict({ outcome }: { outcome: Outcome }) {
-  if (outcome === 'correct') return <span className="inline-flex items-center gap-1.5 font-semibold text-easy"><IconCheck />Correct</span>;
-  if (outcome === 'incorrect') return <span className="inline-flex items-center gap-1.5 font-semibold text-hard"><IconX />Incorrect</span>;
-  return <span className="font-semibold text-muted">No answer given</span>;
+  if (outcome === 'correct') return <span className="inline-flex items-center gap-1.5 font-extrabold text-good"><IconCheck />Correct</span>;
+  if (outcome === 'incorrect') return <span className="inline-flex items-center gap-1.5 font-extrabold text-bad"><IconX />Incorrect</span>;
+  return <span className="font-extrabold text-muted">No answer given</span>;
 }
 
 /** Shown after "Check Answer": right or wrong, the correct answer, and the full explanation. */
 export function AnswerReveal({ q, order, outcome, answer }: { q: Question; order?: ChoiceOrder; outcome: Outcome; answer?: string }) {
   const { overall } = useRationale(q, order);
   return (
-    <section aria-label="Answer and explanation" className="mt-4 rounded-lg border border-line bg-surface-2 p-4" tabIndex={-1}>
+    <section aria-label="Answer and explanation" className="mt-5 border-l-4 border-ink bg-surface-2 py-4 pl-5 pr-4" tabIndex={-1}>
       <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
         <Verdict outcome={outcome} />
-        {q.type === 'spr' && answer && <span className="text-sm">Your answer: <strong className="font-mono">{answer}</strong></span>}
+        {q.type === 'spr' && answer && <span className="text-sm">Your answer: <strong>{answer}</strong></span>}
         <span className="text-sm">Correct answer: <CorrectAnswer q={q} order={order} /></span>
       </div>
-      <h3 className="mt-3 text-sm font-semibold uppercase tracking-wide text-muted">Explanation</h3>
-      <Blocks blocks={overall} className="text-[0.95rem]" />
+      <h3 className="mt-3 font-extrabold">Why</h3>
+      <Blocks blocks={overall} className="max-w-[68ch] text-[0.95rem]" />
     </section>
   );
 }
@@ -58,21 +58,21 @@ export function ChoiceExplanation({ q, order, letter }: { q: Question; order?: C
   const shown = letter ? toDisplay(order, letter) : undefined;
   const right = letter ? q.correct.includes(letter) : false;
   return (
-    <section aria-label="Explanation" aria-live="polite" className="mt-4 rounded-lg border border-line bg-surface-2 p-4">
+    <section aria-label="Explanation" aria-live="polite" className="mt-5 border-l-4 border-ink bg-surface-2 py-4 pl-5 pr-4">
       {q.type === 'mcq' && !letter && <p className="text-sm text-muted">Click any answer choice to see why it is right or wrong.</p>}
       {q.type === 'mcq' && letter && !part && (
-        <h3 className={`font-semibold ${right ? 'text-easy' : 'text-hard'}`}>Choice {shown} is {right ? 'correct' : 'incorrect'}</h3>
+        <h3 className={`font-extrabold ${right ? 'text-good' : 'text-bad'}`}>Choice {shown} is {right ? 'correct' : 'incorrect'}</h3>
       )}
-      {q.type === 'mcq' && letter && part && <Blocks blocks={part} className="text-[0.95rem]" />}
+      {q.type === 'mcq' && letter && part && <Blocks blocks={part} className="max-w-[68ch] text-[0.95rem]" />}
       {q.type === 'mcq' && letter && !part && <p className="text-sm text-muted">This explanation isn’t split by choice, so the full explanation is shown.</p>}
       {(q.type === 'spr' || full || (letter && !part)) && (
         <>
-          <h3 className="mt-3 text-sm font-semibold uppercase tracking-wide text-muted">Full explanation</h3>
-          <Blocks blocks={overall} className="text-[0.95rem]" />
+          <h3 className="mt-3 font-extrabold">Full explanation</h3>
+          <Blocks blocks={overall} className="max-w-[68ch] text-[0.95rem]" />
         </>
       )}
       {q.type === 'mcq' && (
-        <button type="button" onClick={() => setFull((f) => !f)} aria-expanded={full} className="mt-3 text-sm font-semibold text-accent hover:underline">
+        <button type="button" onClick={() => setFull((f) => !f)} aria-expanded={full} className="mt-3 text-sm font-bold underline decoration-control underline-offset-2 hover:decoration-ink">
           {full ? 'Hide full explanation' : 'Show full explanation'}
         </button>
       )}

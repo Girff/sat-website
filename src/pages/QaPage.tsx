@@ -26,17 +26,17 @@ export default function QaPage() {
         {low.length} low-confidence question{low.length === 1 ? '' : 's'}. Left: the original PDF page. Right: the question rendered from the extracted data.
         This page exists only in development builds.
       </p>
-      {error && <p className="mt-4 text-hard">{error}</p>}
+      {error && <p className="mt-4 text-bad">{error}</p>}
       {!questions && !error && <p className="mt-6 text-muted">Loading…</p>}
       <div className="mt-6 grid gap-6">
         {questions?.map((q) => (
           <article key={q.id} className="overflow-hidden rounded-lg border border-line bg-surface">
             <header className="flex flex-wrap items-center gap-2 border-b border-line px-4 py-3 text-sm">
-              <span className="font-mono font-semibold">{q.id}</span>
+              <span className="font-bold">{q.id}</span>
               <span className="text-muted">{SECTION_LABEL[q.section]} · {q.skill}</span>
               <DifficultyBadge value={q.difficulty} />
               <span className="text-muted">{q.sourcePdf} p.{q.sourcePage}</span>
-              <ul className="basis-full text-hard">{q.issues?.map((i) => <li key={i}>{i}</li>)}</ul>
+              <ul className="basis-full text-bad">{q.issues?.map((i) => <li key={i}>{i}</li>)}</ul>
             </header>
             <div className="grid md:grid-cols-2">
               <div className="border-b border-line bg-surface-2 p-3 md:border-b-0 md:border-r">
@@ -48,7 +48,7 @@ export default function QaPage() {
                 {q.choices && (
                   <ol className="my-3 grid gap-2">
                     {q.choices.map((c) => (
-                      <li key={c.label} className={`q-choice flex gap-3 rounded-md border px-3 py-2 ${q.correct.includes(c.label) ? 'border-easy bg-easy-soft' : 'border-line'}`}>
+                      <li key={c.label} className={`q-choice flex gap-3 rounded-md border px-3 py-2 ${q.correct.includes(c.label) ? 'border-good bg-good-soft' : 'border-line'}`}>
                         <span className="font-semibold">{c.label}.</span>
                         <Blocks blocks={c.content} className="min-w-0 flex-1" />
                       </li>
@@ -57,7 +57,7 @@ export default function QaPage() {
                 )}
                 <p className="text-sm text-muted">Correct answer: <strong className="text-ink">{q.correct.join(', ')}</strong></p>
                 <details className="mt-2 text-sm" open>
-                  <summary className="cursor-pointer font-semibold text-accent">Rationale</summary>
+                  <summary className="cursor-pointer font-bold underline">Rationale</summary>
                   <Blocks blocks={q.rationale.overall} />
                 </details>
               </div>

@@ -1,25 +1,26 @@
 // Question navigator (grid of numbered boxes) and the submit confirmation.
 import { useEffect, useRef } from 'react';
 import { Dialog, btn } from '../../components/Dialog';
-import { IconFlag, IconX } from '../../components/Icons';
+import { Flag } from '../../components/Badges';
+import { IconX } from '../../components/Icons';
 import type { ActiveTest } from '../../store/test';
 
 const isAnswered = (t: ActiveTest, id: string) => (t.answers[id] ?? '').trim() !== '';
 
 function Legend() {
   return (
-    <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
-      <li className="flex items-center gap-1.5"><span className="size-3.5 rounded-sm border-2 border-accent ring-2 ring-accent/30" />Current</li>
-      <li className="flex items-center gap-1.5"><span className="size-3.5 rounded-sm bg-accent" />Answered</li>
-      <li className="flex items-center gap-1.5"><span className="size-3.5 rounded-sm border-2 border-dashed border-line-strong" />Unanswered</li>
-      <li className="flex items-center gap-1.5"><IconFlag width={14} height={14} className="fill-current text-flag" />For review</li>
+    <ul className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted">
+      <li className="flex items-center gap-1.5"><span className="bubble ring-2 ring-ink ring-offset-1 ring-offset-surface" data-state="marked" />Current</li>
+      <li className="flex items-center gap-1.5"><span className="bubble" data-state="filled" />Answered</li>
+      <li className="flex items-center gap-1.5"><span className="bubble" />Unanswered</li>
+      <li className="flex items-center gap-1.5"><Flag size={15} />For review</li>
     </ul>
   );
 }
 
 function Boxes({ test, onJump }: { test: ActiveTest; onJump: (i: number) => void }) {
   return (
-    <ol className="grid grid-cols-[repeat(auto-fill,minmax(2.5rem,1fr))] gap-2">
+    <ol className="grid grid-cols-[repeat(auto-fill,minmax(3rem,1fr))] gap-x-2 gap-y-3">
       {test.items.map(({ id }, i) => {
         const answered = isAnswered(test, id);
         const marked = !!test.marked[id];
@@ -32,12 +33,12 @@ function Boxes({ test, onJump }: { test: ActiveTest; onJump: (i: number) => void
               onClick={() => onJump(i)}
               aria-label={label}
               aria-current={current ? 'step' : undefined}
-              className={`relative grid h-10 w-full place-items-center rounded-md text-sm font-semibold tabular-nums ${
-                answered ? 'bg-accent text-accent-ink' : 'border-2 border-dashed border-line-strong text-ink hover:border-accent'} ${
-                current ? 'ring-2 ring-accent ring-offset-2 ring-offset-surface' : ''}`}
+              className={`relative mx-auto grid h-8 w-12 place-items-center rounded-[50%] border-2 text-sm font-extrabold tabular-nums ${
+                current ? 'border-ink bg-marker text-marker-ink ring-2 ring-ink ring-offset-2 ring-offset-surface'
+                  : answered ? 'border-ink bg-ink text-bg' : 'border-control text-ink hover:bg-surface-2'}`}
             >
               {i + 1}
-              {marked && <IconFlag aria-hidden width={13} height={13} className="absolute -right-1 -top-1.5 fill-current text-flag" />}
+              {marked && <Flag size={14} className="absolute -right-1.5 -top-2" />}
             </button>
           </li>
         );
@@ -68,10 +69,10 @@ export function NavigatorPanel({ test, onJump, onClose, onReview }: { test: Acti
       ref={ref}
       role="dialog"
       aria-label="Question navigator"
-      className="absolute bottom-full left-1/2 z-30 mb-2 w-[min(34rem,calc(100vw-1.5rem))] -translate-x-1/2 rounded-xl border border-line bg-surface p-4 shadow-2xl"
+      className="absolute bottom-full left-1/2 z-30 mb-2 w-[min(34rem,calc(100vw-1.5rem))] -translate-x-1/2 rounded-lg border border-line-strong bg-surface p-4 shadow-[0_24px_60px_-12px_rgb(28_31_36/0.35)]"
     >
       <div className="mb-3 flex items-center gap-2">
-        <h2 className="flex-1 font-semibold">{test.name}</h2>
+        <h2 className="flex-1 font-extrabold">{test.name}</h2>
         <button type="button" onClick={onClose} aria-label="Close navigator" className="grid size-8 place-items-center rounded-md text-muted hover:bg-surface-2"><IconX width={18} height={18} /></button>
       </div>
       <Legend />
@@ -92,7 +93,7 @@ export function SubmitDialog({ open, test, onClose, onJump, onSubmit, submitting
   const jumpList = (idx: number[]) => (
     <span className="flex flex-wrap gap-1.5">
       {idx.map((i) => (
-        <button key={i} type="button" onClick={() => { onJump(i); onClose(); }} className="min-w-8 rounded border border-line-strong px-1.5 py-0.5 text-sm font-semibold tabular-nums hover:border-accent hover:text-accent">
+        <button key={i} type="button" onClick={() => { onJump(i); onClose(); }} className="h-7 min-w-10 rounded-[50%] border-2 border-control px-1.5 text-sm font-extrabold tabular-nums hover:border-ink hover:bg-marker-soft">
           {i + 1}
         </button>
       ))}
@@ -117,11 +118,11 @@ export function SubmitDialog({ open, test, onClose, onJump, onSubmit, submitting
           After submitting you’ll see your score and can review every question.
         </p>
         <div>
-          <h3 className="mb-1.5 font-semibold">Unanswered ({unanswered.length})</h3>
+          <h3 className="mb-1.5 font-extrabold">Unanswered ({unanswered.length})</h3>
           {unanswered.length ? jumpList(unanswered) : <p className="text-muted">None.</p>}
         </div>
         <div>
-          <h3 className="mb-1.5 font-semibold">Marked for review ({marked.length})</h3>
+          <h3 className="mb-1.5 font-extrabold">Marked for review ({marked.length})</h3>
           {marked.length ? jumpList(marked) : <p className="text-muted">None.</p>}
         </div>
         <div className="border-t border-line pt-4">

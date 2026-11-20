@@ -32,7 +32,7 @@ export function Timer({ startedAt, deadline, stopwatch, onWarn }: Props) {
     }
   }, [warning, deadline, startedAt, onWarn]);
 
-  if (remaining === null && !stopwatch) return <span className="text-sm text-muted">Untimed</span>;
+  if (remaining === null && !stopwatch) return <span className="text-sm font-bold text-muted">Untimed</span>;
   const shown = remaining !== null ? formatClock(Math.max(0, remaining)) : formatClock(now - startedAt);
   return (
     <div className="flex items-center gap-2">
@@ -40,7 +40,7 @@ export function Timer({ startedAt, deadline, stopwatch, onWarn }: Props) {
         <span
           role="timer"
           aria-label={remaining !== null ? 'Time remaining' : 'Time elapsed'}
-          className={`font-mono text-lg font-semibold tabular-nums ${warning ? 'text-hard' : ''}`}
+          className={`text-xl font-extrabold tabular-nums ${warning ? 'rounded bg-marker px-1.5 text-marker-ink' : ''}`}
         >
           {shown}
         </span>
@@ -48,7 +48,7 @@ export function Timer({ startedAt, deadline, stopwatch, onWarn }: Props) {
       <button
         type="button"
         onClick={() => setHidden((h) => !h)}
-        className="rounded-full border border-line-strong px-2.5 py-0.5 text-xs font-semibold text-muted hover:text-ink"
+        className="rounded-full border border-line-strong px-2.5 py-0.5 text-xs font-bold text-muted hover:border-control hover:text-ink"
       >
         {hidden ? 'Show timer' : 'Hide'}
       </button>

@@ -2,7 +2,8 @@
 // correct one marked. Clicking a choice shows why that choice is right or wrong.
 import { useEffect, useState } from 'react';
 import { btn } from '../../components/Dialog';
-import { IconFlag } from '../../components/Icons';
+import { Flag } from '../../components/Badges';
+import { IconArrowLeft, IconArrowRight } from '../../components/Icons';
 import { ChoiceList } from '../../components/question/ChoiceList';
 import { ChoiceExplanation, CorrectAnswer, Verdict } from '../../components/question/Explain';
 import { GridIn } from '../../components/question/GridIn';
@@ -67,21 +68,21 @@ export default function Review({ result: r }: { result: TestResult }) {
     <div className="flex h-[calc(100dvh-var(--nav-h,3.5rem))] flex-col bg-surface">
       <div className="border-b border-line px-4 py-3">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <a href={hrefFor(`/results/${r.key}`)} className="text-sm font-medium text-accent hover:underline">← Results</a>
-          <h1 className="min-w-0 flex-1 truncate font-semibold">Review: {r.name}</h1>
+          <a href={hrefFor(`/results/${r.key}`)} className="link inline-flex items-center gap-1 text-sm"><IconArrowLeft width={15} height={15} />Results</a>
+          <h1 className="min-w-0 flex-1 truncate font-extrabold">Review: {r.name}</h1>
           <div role="group" aria-label="Show questions" className="flex flex-wrap gap-1">
             {FILTERS.map((f) => {
               const n = r.items.filter((it) => test(f.id, it.id)).length;
               return (
                 <button key={f.id} type="button" aria-pressed={filter === f.id} onClick={() => setFilter(f.id)}
-                  className={`rounded-full border px-3 py-1 text-sm font-medium ${filter === f.id ? 'border-accent bg-accent text-accent-ink' : 'border-line hover:border-line-strong'}`}>
+                  className={`rounded-full border px-3 py-1 text-sm font-bold ${filter === f.id ? 'border-ink bg-marker text-marker-ink' : 'border-line-strong hover:border-control'}`}>
                   {f.label} <span className="tabular-nums opacity-80">{n}</span>
                 </button>
               );
             })}
           </div>
         </div>
-        <ol className="mt-3 flex gap-1.5 overflow-x-auto pb-1" aria-label="Questions">
+        <ol className="mt-3 flex gap-2 overflow-x-auto px-1 pb-2 pt-1" aria-label="Questions">
           {indices.map((i) => {
             const id = r.items[i].id;
             const o = r.outcome[id];
@@ -89,9 +90,9 @@ export default function Review({ result: r }: { result: TestResult }) {
               <li key={id}>
                 <button type="button" onClick={() => go(i)} aria-current={i === cur ? 'step' : undefined}
                   aria-label={`Question ${i + 1}, ${o}`}
-                  className={`grid h-8 min-w-8 place-items-center rounded-md px-1.5 text-sm font-semibold tabular-nums ${
-                    o === 'correct' ? 'bg-easy-soft text-easy' : o === 'incorrect' ? 'bg-hard-soft text-hard' : 'border-2 border-dashed border-line-strong text-muted'} ${
-                    i === cur ? 'ring-2 ring-accent ring-offset-1 ring-offset-surface' : ''}`}>
+                  className={`grid h-7 min-w-10 place-items-center rounded-[50%] border-2 px-1.5 text-sm font-extrabold tabular-nums ${
+                    o === 'correct' ? 'border-good bg-good text-surface' : o === 'incorrect' ? 'border-bad bg-bad text-surface' : 'border-control text-muted'} ${
+                    i === cur ? 'ring-2 ring-ink ring-offset-2 ring-offset-surface' : ''}`}>
                   {i + 1}
                 </button>
               </li>
@@ -103,18 +104,18 @@ export default function Review({ result: r }: { result: TestResult }) {
       {item && entry ? <ReviewQuestion key={item.id} r={r} index={cur} entry={entry} /> : (
         <div className="grid flex-1 place-items-center p-8 text-center text-muted">
           <div>
-            <p>No questions in this list.</p>
+            <p className="font-bold text-ink">No questions in this list.</p>
             <button type="button" className={`${btn.secondary} mt-3`} onClick={() => setFilter('all')}>Show all</button>
           </div>
         </div>
       )}
 
-      <div className="flex items-center gap-2 border-t border-line px-4 py-2.5">
-        <button type="button" className={btn.secondary} disabled={pos <= 0} onClick={() => go(indices[pos - 1])}>← Previous</button>
+      <div className="flex items-center gap-2 border-t border-line bg-surface-2 px-4 py-2.5">
+        <button type="button" className={btn.secondary} disabled={pos <= 0} onClick={() => go(indices[pos - 1])}><IconArrowLeft width={16} height={16} />Previous</button>
         <p className="flex-1 text-center text-sm text-muted" aria-live="polite">
-          {pos >= 0 && <>Question <strong className="text-ink">{cur + 1}</strong> of {r.items.length}{filter !== 'all' && ` · ${pos + 1} of ${indices.length} shown`}</>}
+          {pos >= 0 && <>Question <strong className="text-ink">{cur + 1}</strong> of {r.items.length}{filter !== 'all' && <span className="max-sm:hidden"> ({pos + 1} of {indices.length} shown)</span>}</>}
         </p>
-        <button type="button" className={btn.secondary} disabled={pos < 0 || pos >= indices.length - 1} onClick={() => go(indices[pos + 1])}>Next →</button>
+        <button type="button" className={btn.secondary} disabled={pos < 0 || pos >= indices.length - 1} onClick={() => go(indices[pos + 1])}>Next<IconArrowRight width={16} height={16} /></button>
       </div>
     </div>
   );
@@ -138,14 +139,14 @@ function ReviewQuestion({ r, index, entry }: { r: TestResult; index: number; ent
   const ms = r.timeMs[item.id] ?? 0;
   const slow = isSlow(ms, entry.section);
   const toolbar = (
-    <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-line pb-2 text-sm">
-      <span className="grid h-8 min-w-8 place-items-center rounded bg-ink px-2 font-bold text-bg tabular-nums">{index + 1}</span>
+    <div className="mb-5 flex flex-wrap items-center gap-x-5 gap-y-1 border-b-2 border-dashed border-line-strong pb-2 text-sm">
+      <span className="grid h-9 min-w-9 place-items-center bg-ink px-2 text-base font-extrabold text-bg tabular-nums">{index + 1}</span>
       <Verdict outcome={r.outcome[item.id]} />
-      <span>Your answer: <strong className="font-mono">{answer ? (q.type === 'mcq' ? toDisplay(item.choices, answer as Letter) : answer) : '—'}</strong></span>
+      <span>Your answer: <strong>{answer ? (q.type === 'mcq' ? toDisplay(item.choices, answer as Letter) : answer) : 'none'}</strong></span>
       <span>Correct: <CorrectAnswer q={q} order={item.choices} /></span>
-      <span className={slow ? 'font-semibold text-hard' : 'text-muted'}>Time {formatClock(ms)}{slow && ' (slow)'}</span>
-      {r.marked.includes(item.id) && <span className="inline-flex items-center gap-1 text-flag"><IconFlag width={15} height={15} className="fill-current" />Marked</span>}
-      <span className="ml-auto font-mono text-xs text-muted">{q.id}</span>
+      <span className={slow ? 'font-extrabold text-bad' : 'text-muted'}>Time {formatClock(ms)}{slow && ' (slow)'}</span>
+      {r.marked.includes(item.id) && <span className="inline-flex items-center gap-1 font-bold"><Flag size={15} />Marked</span>}
+      <span className="ml-auto text-xs text-muted">{q.id}</span>
     </div>
   );
   return (

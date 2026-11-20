@@ -15,10 +15,10 @@ interface Props {
 export function GridIn({ id, value, onChange, disabled, onEnter, verdict }: Props) {
   const error = gridInError(value);
   const preview = value && !error && parseGridIn(value) ? gridInPreview(value) : null;
-  const tone = verdict === 'correct' ? 'border-easy bg-easy-soft' : verdict === 'incorrect' ? 'border-hard bg-hard-soft' : error ? 'border-hard' : 'border-line-strong focus:border-accent';
+  const tone = verdict === 'correct' ? 'border-good bg-good-soft' : verdict === 'incorrect' ? 'border-bad bg-bad-soft' : error ? 'border-bad' : 'border-control focus:border-ink focus:ring-2 focus:ring-marker';
   return (
     <div className="my-5">
-      <label htmlFor={id} className="block text-sm font-semibold">Your answer</label>
+      <label htmlFor={id} className="block text-sm font-bold">Your answer</label>
       <input
         id={id}
         type="text"
@@ -39,11 +39,11 @@ export function GridIn({ id, value, onChange, disabled, onEnter, verdict }: Prop
         }}
         aria-invalid={error ? true : undefined}
         aria-describedby={`${id}-help`}
-        className={`mt-1.5 h-12 w-44 rounded-md border-2 bg-surface px-3 text-center font-mono text-xl tracking-wider outline-none disabled:opacity-80 ${tone}`}
+        className={`mt-1.5 h-12 w-48 rounded-md border-2 bg-surface px-3 text-center text-2xl font-bold tracking-wide outline-none disabled:opacity-80 ${tone}`}
       />
       <p id={`${id}-help`} className="mt-2 min-h-6 text-sm" aria-live="polite">
         {error ? (
-          <span className="text-hard">{error}</span>
+          <span className="text-bad">{error}</span>
         ) : preview ? (
           <span className="text-muted">Answer preview: <span className="ml-1 text-base text-ink"><TeX tex={preview} /></span></span>
         ) : (
